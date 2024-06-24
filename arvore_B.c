@@ -94,3 +94,24 @@ pagina *criaPagina(arvore *arv){
     page->folha = 1;
     return page;
 }
+
+/*
+Descrição: Insere um elemento na árvore, e chama as funções de correção dependendo do caso.
+Entrada: Ponteiro para a árvore b, inteiro da chave, inteiro da linha.
+Saída: 1 - Sucesso, 0 - Erro.
+*/
+int insereNo(arvore *arv, int chave, int indice){
+    if(!arv->numElementos){
+        arv->sentinela->filhos = criaPagina(arv);
+        if(!arv->sentinela->filhos){
+            return 0;
+        }
+        arv->sentinela->filhos->chaves[0] = chave;
+        arv->sentinela->filhos->indice[0] = indice;
+        arv->sentinela->filhos->nChaves = 1;
+        arv->sentinela->filhos->pai = arv->sentinela;
+    }else{
+        //Sinistro
+    }
+    return 1;
+}
