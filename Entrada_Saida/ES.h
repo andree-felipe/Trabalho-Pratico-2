@@ -1,8 +1,11 @@
-//
-// Created by dange on 24/06/2024.
-//
+// Função para criação dos nomes para o registro no arquivo
+void criaNome(char *nome);
 
-#ifndef TRABALHO_PRATICO_2_ES_H
-#define TRABALHO_PRATICO_2_ES_H
+// Funcão para criação das matrículas para o registro no arquivo
+int criaMatricula();
 
-#endif //TRABALHO_PRATICO_2_ES_H
+// Funcão para criação das datas de nascimento para o registro no arquivo
+char *criaDataNascimento();
+
+// Funcão para criação dos CPFs para o registro no arquivo
+unsigned long long criaCPF();
