@@ -101,6 +101,7 @@ Entrada: Ponteiro para a árvore b, inteiro da chave, inteiro da linha.
 Saída: 1 - Sucesso, 0 - Erro.
 */
 int insereNo(arvore *arv, int chave, int indice){
+    pagina *pageAtual, *pageAux;
     if(!arv->numElementos){
         arv->sentinela->filhos = criaPagina(arv);
         if(!arv->sentinela->filhos){
@@ -111,7 +112,27 @@ int insereNo(arvore *arv, int chave, int indice){
         arv->sentinela->filhos->nChaves = 1;
         arv->sentinela->filhos->pai = arv->sentinela;
     }else{
-        //Sinistro
+        pageAtual = arv->sentinela->filhos;
+        while(!pageAtual->folha){
+            pageAux = pageAtual;
+            for(int i = 0; i < pageAux->nChaves; i++){
+                if(chave < pageAux->chaves[i]){
+                    pageAtual = &pageAux->filhos[i];
+                }else if(i == pageAux->nChaves - 1){
+                    pageAtual = &pageAux->filhos[i+1];
+                }
+            }
+        }
+        if(pageAtual->nChaves < arv->ordem - 1){
+            //Insere no nó
+        }else{
+            //Nó cheio
+            if(pageAtual->pai == arv->sentinela || pageAtual->pai->nChaves == arv->ordem - 1){
+                //Pai cheio
+            }else{
+                //Tem espaço no pai
+            }
+        }
     }
     return 1;
 }
