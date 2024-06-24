@@ -3,17 +3,21 @@
 
 /*** -- Estruturas -- ***/
 
+struct chave{
+    int chave;
+    int indice;
+};
+
 struct pagina{
-    int *chaves;
-    int *indice;
+    chave **chaves;
     int nChaves;
     int folha;
-    pagina *filhos;
+    pagina **filhos;
     pagina *pai;
 };
 
 struct arvore{
-    pagina *sentinela;
+    pagina *raiz;
     int numElementos;
     int ordem;
 };
@@ -32,31 +36,17 @@ arvore *criaArvore(int ordem){
     }
     arv->numElementos = 0;
     arv->ordem = ordem;
-    arv->sentinela = (pagina*)malloc(sizeof(pagina));
-    if(!arv->sentinela){
-        free(arv);
-        return NULL;
-    }
-    arv->sentinela->chaves = (int*)malloc(sizeof(int));
-    if(!arv->sentinela->chaves){
-        free(arv->sentinela);
-        free(arv);
-        return NULL;
-    }
-    arv->sentinela->chaves[0] = -1000;
-    arv->sentinela->indice = (int*)malloc(sizeof(int));
-    if(!arv->sentinela->indice){
-        free(arv->sentinela->chaves);
-        free(arv->sentinela);
-        free(arv);
-        return NULL;
-    }
-    arv->sentinela->indice[0] = -1;
-    arv->sentinela->folha = 0;
-    arv->sentinela->nChaves = 1;
-    arv->sentinela->filhos = NULL;
-    arv->sentinela->pai = NULL;
+    arv->raiz = NULL;
     return arv;
+}
+
+/*
+Descrição: Retorna a raiz da árvore.
+Entrada: Ponteiro para a árvore b.
+Saída: Ponteiro para a raiz da árvore.
+*/
+pagina *getRaiz(arvore *arv){
+    return arv->raiz;
 }
 
 /*
@@ -70,21 +60,11 @@ pagina *criaPagina(arvore *arv){
         return NULL;
     }
     if(arv->ordem % 2 == 0){
-        page->chaves = (int*)malloc(sizeof(int) * (arv->ordem - 1));
+        page->chaves = (chave**)malloc(sizeof(chave*) * (arv->ordem - 1));
     }else{
-        page->chaves = (int*)malloc(sizeof(int) * (arv->ordem));
+        page->chaves = (chave**)malloc(sizeof(chave*) * (arv->ordem));
     }
     if(!page->chaves){
-        free(page);
-        return NULL;
-    }
-    if(arv->ordem % 2 == 0){
-        page->indice = (int*)malloc(sizeof(int) * (arv->ordem - 1));
-    }else{
-        page->indice = (int*)malloc(sizeof(int) * (arv->ordem));
-    }
-    if(!page->indice){
-        free(page->chaves);
         free(page);
         return NULL;
     }
@@ -100,26 +80,30 @@ Descrição: Insere um elemento na árvore, e chama as funções de correção d
 Entrada: Ponteiro para a árvore b, inteiro da chave, inteiro da linha.
 Saída: 1 - Sucesso, 0 - Erro.
 */
-int insereNo(arvore *arv, int chave, int indice){
+int insereNo(arvore *arv, int valor, int indice){
     pagina *pageAtual, *pageAux;
     if(!arv->numElementos){
-        arv->sentinela->filhos = criaPagina(arv);
-        if(!arv->sentinela->filhos){
+        arv->raiz = criaPagina(arv);
+        if(!arv->raiz){
             return 0;
         }
-        arv->sentinela->filhos->chaves[0] = chave;
-        arv->sentinela->filhos->indice[0] = indice;
-        arv->sentinela->filhos->nChaves = 1;
-        arv->sentinela->filhos->pai = arv->sentinela;
+        arv->raiz->chaves[0] = (chave*)malloc(sizeof(chave));
+        if(!arv->raiz->chaves[0]){
+            free(arv->raiz);
+            return 0;
+        }
+        arv->raiz->chaves[0]->chave = valor;
+        arv->raiz->chaves[0]->indice = indice;
+        arv->raiz->nChaves = 1;
     }else{
-        pageAtual = arv->sentinela->filhos;
+        pageAtual = arv->raiz;
         while(!pageAtual->folha){
             pageAux = pageAtual;
             for(int i = 0; i < pageAux->nChaves; i++){
-                if(chave < pageAux->chaves[i]){
-                    pageAtual = &pageAux->filhos[i];
+                if(valor < pageAux->chaves[i]->chave){
+                    pageAtual = pageAux->filhos[i];
                 }else if(i == pageAux->nChaves - 1){
-                    pageAtual = &pageAux->filhos[i+1];
+                    pageAtual = pageAux->filhos[i+1];
                 }
             }
         }
@@ -127,7 +111,7 @@ int insereNo(arvore *arv, int chave, int indice){
             //Insere no nó
         }else{
             //Nó cheio
-            if(pageAtual->pai == arv->sentinela || pageAtual->pai->nChaves == arv->ordem - 1){
+            if(pageAtual->pai || pageAtual->pai->nChaves == arv->ordem - 1){
                 //Pai cheio
             }else{
                 //Tem espaço no pai
