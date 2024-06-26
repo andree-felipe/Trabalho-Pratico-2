@@ -46,6 +46,18 @@ Saída: 1 - Sucesso, 0 - Erro.
 */
 int insereFolha(pagina *page, int valor, int indice);
 
+/* 
+Descrição: Busca de um chave na árvore para coleta do índice para busca posterior no arquivo
+Entrada: Ponteiro para a árvore, valor inteiro de busca
+Saída: índice da chave buscada
+*/
+int buscaArvore(arvore *arv, int valorBusca);
 
+/* 
+Entrada: Nome do arquivo, índice de busca
+Descrição: Busca no arquivo a partir do índice encontrado na árvore
+Saída: 1 - Sucesso, 0 - Falha
+*/
+int buscaArquivo(char nomeArquivo, int indice);
 
 #endif //INC_13_TRABALHO2_ARVORE_B_H
