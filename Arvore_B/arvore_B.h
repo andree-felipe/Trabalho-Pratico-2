@@ -65,8 +65,8 @@ int buscaArquivoIndice(char nomeArquivo, int indice);
 /* 
 Entrada: 
 Descrição: busca de informações diretamente no arquivo
-Saída: 1 - Sucesso, 0 - Falha
+Saída: 0 - Falha
 */
-int buscaArquivoDireto();
+int buscaArquivoDireto(char nomeArquivo, int matriculaParametro, dado *dadosColetados);
 
 #endif //INC_13_TRABALHO2_ARVORE_B_H

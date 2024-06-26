@@ -213,4 +213,23 @@ int buscaArquivoIndice(char nomeArquivo, int indice, dado *dadosColetados) {
         fscanf(arq, "%d %d %d %s", &dadosColetados->matricula, &dadosColetados->idade, &dadosColetados->cpf, &dadosColetados->nome);
         printf("Nome: %s | Matricula: %d | Idade: %d | CPF: %d", dadosColetados->nome, dadosColetados->matricula, dadosColetados->idade, dadosColetados->cpf);
     }
+
+    fclose(arq);
+}
+
+int BuscaArquivoDireto(char nomeArquivo, int matriculaParametro, dado *dadosColetados) {
+    FILE *arq = fopen(nomeArquivo, "r");
+    
+    if(!arq) {
+        return 0;
+    }
+    else {
+        while(fscanf(arq, "%d %d %d %s", &dadosColetados->matricula, &dadosColetados->idade, &dadosColetados->cpf, &dadosColetados->nome) != EOF) {
+            if(dadosColetados->matricula == matriculaParametro) {
+                printf("Nome: %s | Matricula: %d | Idade: %d | CPF: %d", dadosColetados->nome, dadosColetados->matricula, dadosColetados->idade, dadosColetados->cpf);
+            }
+        }
+    }
+
+    fclose(arq);
 }
