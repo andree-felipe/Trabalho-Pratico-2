@@ -1,6 +1,11 @@
+#ifndef INC_13_TRABALHO2_ARVORE_B_H
+#define INC_13_TRABALHO2_ARVORE_B_H
+
 /*** -- Estruturas -- ***/
 
 typedef struct pagina pagina;
+
+typedef struct chave chave;
 
 typedef struct arvore arvore;
 
@@ -14,6 +19,13 @@ Saída: Ponteiro para a árvore; NULL em caso de erro.
 arvore *criaArvore(int ordem);
 
 /*
+Descrição: Retorna a raiz da árvore.
+Entrada: Ponteiro para a árvore b.
+Saída: Ponteiro para a raiz da árvore.
+*/
+pagina *getRaiz(arvore *arv);
+
+/*
 Descrição: Cria uma estrutura da página.
 Entrada: Ponteiro para a árvore b.
 Saída: Ponteiro para a página; NULL em caso de erro.
@@ -25,4 +37,15 @@ Descrição: Insere um elemento na árvore, e chama as funções de correção d
 Entrada: Ponteiro para a árvore b, inteiro da chave, inteiro da linha.
 Saída: 1 - Sucesso, 0 - Erro.
 */
-int insereNo(arvore *arv, int chave, int indice);
+int insereNo(arvore *arv, int valor, int indice);
+
+/*
+Descrição: Aloca uma nova estrutura de chave, e salva ela na lista de chaves da página.
+Entrada: Ponteiro para a página onde será inserido, inteiro da chave, inteiro da linha.
+Saída: 1 - Sucesso, 0 - Erro.
+*/
+int insereFolha(pagina *page, int valor, int indice);
+
+
+
+#endif //INC_13_TRABALHO2_ARVORE_B_H

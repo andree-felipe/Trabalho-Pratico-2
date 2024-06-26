@@ -1,16 +1,16 @@
 #include <stdio.h>
 #include <string.h>
-#include "ArvoreB/arvore_B.h"
-#include "Entrada_Saida/ES.h"
+#include "arvore_B.h"
 
 struct dado{
-    int mat;
+    int matricula;
+    int idade;
+    int cpf;
     char nome[6];
-    int vagabundo;
 };
 
 int main(void) {
-    FILE *arq = fopen("arquivo.txt", "r");
+    FILE *arq = fopen("C:\\Users\\Usuario\\Documents\\01 - Universidade\\3 - Periodo\\CTCO02 - Algoritimo e Estruturas de Dados II\\13_Trabalho2\\dataset.txt", "r");
     struct dado d;
     arvore *arv;
     int resp;
@@ -18,7 +18,6 @@ int main(void) {
     if(!arq){
         return 1;
     }
-
     printf("\nQual será a ordem da árvore?\nResposta: ");
     scanf("%d", &resp);
 
