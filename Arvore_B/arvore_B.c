@@ -1,5 +1,6 @@
 #include "arvore_B.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 /*** -- Estruturas -- ***/
 
@@ -20,6 +21,13 @@ struct arvore{
     pagina *raiz;
     int numElementos;
     int ordem;
+};
+
+struct dado{
+    int matricula;
+    int idade;
+    int cpf;
+    char nome[6];
 };
 
 /*** -- Funções -- ***/
@@ -136,7 +144,7 @@ int insereNo(arvore *arv, int valor, int indice){
 /*
 Descrição: Aloca uma nova estrutura de chave, e salva ela na lista de chaves da página.
 Entrada: Ponteiro para a página onde será inserido, inteiro da chave, inteiro da linha.
-Saída: 1 - Sucesso, 0 - Erro.
+Saída: 0 - Erro.
 */
 int insereFolha(pagina *page, int valor, int indice){
     int pos = page->nChaves - 1;
@@ -153,4 +161,57 @@ int insereFolha(pagina *page, int valor, int indice){
     page->chaves[pos + 1]->indice = indice;
     page->nChaves+=1;
     return 1;
+}
+
+int buscaArvore(arvore *arv, int valorBusca) {
+    pagina *pageAtual = arv->raiz;
+    int indice = -1;
+    
+    //Enquanto o pageAtual não chegar na folha, continue procurando.
+    while(!pageAtual->folha){
+        pagina *pageAux = pageAtual; //Salvando o pai.
+        //Verificando em qual filho entrar.
+        for(int i = 0; i < pageAux->nChaves && indice == -1; i++){
+            if(valorBusca == pageAux->chaves[i]->chave) {
+                indice = pageAux->chaves[i]->indice;
+            }
+            else {
+                if(valorBusca < pageAux->chaves[i]->chave){
+                    pageAtual = pageAux->filhos[i];
+                }else if(i == pageAux->nChaves - 1){
+                    pageAtual = pageAux->filhos[i+1];
+                }
+            }
+        }
+    }
+
+    // Percorrendo a folha, caso o valor não tenha sido encontrado
+    if(indice = -1) {
+        for(int i = 0; i < pageAtual->nChaves && indice == -1; i++) {
+            if(valorBusca == pageAtual->chaves[i]->chave) {
+                indice = pageAtual->chaves[i]->indice;
+            }
+        }
+    }
+
+    return indice;
+}
+
+int buscaArquivoIndice(char nomeArquivo, int indice) {
+    dado *dadosColetados;
+    int tamanhoLinha = sizeof(int) * 3 + sizeof(char[6]) + sizeof(" ") * 3 + sizeof("\n");
+    long int posicaoByte;
+
+    FILE *arq = fopen(nomeArquivo, "r");
+
+    // Não foi possível abrir o arquivo
+    if(!arq) {
+        return 0;
+    }
+    else {
+        posicaoByte = indice * tamanhoLinha;
+        fseek(arq, posicaoByte, SEEK_SET);
+        fscanf(arq, "%d %d %d %s", &dadosColetados->matricula, &dadosColetados->idade, &dadosColetados->cpf, &dadosColetados->nome);
+        printf("Nome: %s | Matricula: %d | Idade: %d | CPF: %d", dadosColetados->nome, dadosColetados->matricula, dadosColetados->idade, dadosColetados->cpf);
+    }
 }
