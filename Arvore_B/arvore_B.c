@@ -197,8 +197,7 @@ int buscaArvore(arvore *arv, int valorBusca) {
     return indice;
 }
 
-int buscaArquivoIndice(char nomeArquivo, int indice) {
-    dado *dadosColetados;
+int buscaArquivoIndice(char nomeArquivo, int indice, dado *dadosColetados) {
     int tamanhoLinha = sizeof(int) * 3 + sizeof(char[6]) + sizeof(" ") * 3 + sizeof("\n");
     long int posicaoByte;
 
