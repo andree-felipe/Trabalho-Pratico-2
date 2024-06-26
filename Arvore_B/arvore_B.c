@@ -23,10 +23,10 @@ struct arvore{
     int ordem;
 };
 
-struct dado{
+struct registro{
     int matricula;
-    int idade;
-    int cpf;
+    unsigned long long cpf;
+    char dataNasc[11];
     char nome[6];
 };
 
@@ -197,7 +197,7 @@ int buscaArvore(arvore *arv, int valorBusca) {
     return indice;
 }
 
-int buscaArquivoIndice(char nomeArquivo, int indice, dado *dadosColetados) {
+int buscaArquivoIndice(char nomeArquivo, int indice, registro *dadosColetados) {
     int tamanhoLinha = sizeof(int) * 3 + sizeof(char[6]) + sizeof(" ") * 3 + sizeof("\n");
     long int posicaoByte;
 
@@ -210,23 +210,23 @@ int buscaArquivoIndice(char nomeArquivo, int indice, dado *dadosColetados) {
     else {
         posicaoByte = indice * tamanhoLinha;
         fseek(arq, posicaoByte, SEEK_SET);
-        fscanf(arq, "%d %d %d %s", &dadosColetados->matricula, &dadosColetados->idade, &dadosColetados->cpf, &dadosColetados->nome);
-        printf("Nome: %s | Matricula: %d | Idade: %d | CPF: %d", dadosColetados->nome, dadosColetados->matricula, dadosColetados->idade, dadosColetados->cpf);
+        fscanf(arq, "%d %s %s %llu", &dadosColetados->matricula, &dadosColetados->nome, &dadosColetados->dataNasc, &dadosColetados->nome);
+        printf("Nome: %s | Matricula: %d | Data de Nascimento: %s | CPF: %llu", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
     }
 
     fclose(arq);
 }
 
-int BuscaArquivoDireto(char nomeArquivo, int matriculaParametro, dado *dadosColetados) {
+int buscaArquivoDireto(char nomeArquivo, int matriculaParametro, registro *dadosColetados) {
     FILE *arq = fopen(nomeArquivo, "r");
     
     if(!arq) {
         return 0;
     }
     else {
-        while(fscanf(arq, "%d %d %d %s", &dadosColetados->matricula, &dadosColetados->idade, &dadosColetados->cpf, &dadosColetados->nome) != EOF) {
+        while(fscanf(arq, "%d %s %s %llu", &dadosColetados->matricula, &dadosColetados->nome, &dadosColetados->dataNasc, &dadosColetados->nome) != EOF) {
             if(dadosColetados->matricula == matriculaParametro) {
-                printf("Nome: %s | Matricula: %d | Idade: %d | CPF: %d", dadosColetados->nome, dadosColetados->matricula, dadosColetados->idade, dadosColetados->cpf);
+                printf("Nome: %s | Matricula: %d | Data de Nascimento: %s | CPF: %llu", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
             }
         }
     }

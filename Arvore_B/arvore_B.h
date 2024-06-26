@@ -9,7 +9,7 @@ typedef struct chave chave;
 
 typedef struct arvore arvore;
 
-typedef struct dado dado;
+typedef struct registro registro;
 
 /*** -- Funções -- ***/
 
@@ -60,13 +60,13 @@ Entrada: Nome do arquivo, índice de busca
 Descrição: Busca no arquivo a partir do índice encontrado na árvore
 Saída: 1 - Sucesso, 0 - Falha
 */
-int buscaArquivoIndice(char nomeArquivo, int indice);
+int buscaArquivoIndice(char nomeArquivo, int indice, registro *dadosColetados);
 
 /* 
 Entrada: 
 Descrição: busca de informações diretamente no arquivo
 Saída: 0 - Falha
 */
-int buscaArquivoDireto(char nomeArquivo, int matriculaParametro, dado *dadosColetados);
+int buscaArquivoDireto(char nomeArquivo, int matriculaParametro, registro *dadosColetados);
 
 #endif //INC_13_TRABALHO2_ARVORE_B_H
