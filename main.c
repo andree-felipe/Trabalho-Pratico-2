@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include "arvore_B.h"
+#include "Arvore_B/arvore_B.h"
+#include "Entrada_Saida/ES.h"
 
 struct dado{
     int matricula;
