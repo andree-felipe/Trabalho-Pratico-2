@@ -122,14 +122,23 @@ int insereNo(arvore *arv, int valor, int indice){
                 return 0;
             }
         }else{
-            //Nó cheio
-            if(pageAtual->pai || pageAtual->pai->nChaves == arv->ordem - 1){
-                //Pai cheio
+            //Nó cheio -> Duas abordagens: Ordem par divide e depois insere, ordem ímpar insere e depois divide.
+            if(arv->ordem % 2 == 0){
+                //Ordem par
             }else{
-                //Tem espaço no pai
+                //Ordem ímpar
+                if(!insereFolha(pageAtual, valor, indice)){
+                    return 0;
+                }
             }
+//            if(pageAtual->pai && pageAtual->pai->nChaves == arv->ordem - 1){
+//                //Pai cheio
+//            }else{
+//                //Tem espaço no pai
+//            }
         }
     }
+    arv->numElementos+=1;
     return 1;
 }
 
@@ -152,5 +161,114 @@ int insereFolha(pagina *page, int valor, int indice){
     page->chaves[pos + 1]->chave = valor;
     page->chaves[pos + 1]->indice = indice;
     page->nChaves+=1;
+    return 1;
+}
+
+/*
+Descrição: Função que insere um elemento em um pai, sendo que a árvore é de ordem ímpar.
+Entrada: Ponteiro para a árvore, ponteiro para a página onde o elemento original foi inserido, valor do elemento que será inserido no pai, e indice.
+Saída: 1 - Sucesso, 0 - Erro.
+*/
+int inserePImpar(arvore *arv, pagina *page, int valor, int indice){
+    if(!page->pai){
+        //O nó é uma raiz.
+        //Criando uma página para o pai.
+        page->pai = criaPagina(arv);
+        if(!page->pai){
+            return 0;
+        }
+        //Setando sua condição como não folha, e criando sua primeira chave.
+        page->pai->folha = 0;
+        page->pai->chaves[0] = (chave*)malloc(sizeof(chave));
+        if(!page->pai->chaves[0]){
+            free(page->pai);
+            return 0;
+        }
+        page->pai->chaves[0]->chave = valor;
+        page->pai->chaves[0]->indice = indice;
+        //Criando seus dois filhos.
+        page->pai->filhos = (pagina**)malloc(sizeof(pagina*) * arv->ordem);
+        if(!page->pai->filhos){
+            free(page->pai->chaves[0]);
+            free(page->pai);
+            return 0;
+        }
+        page->pai->filhos[0] = page;
+        for(int i = 1; i <= arv->ordem; i++){
+            page->pai->filhos[i] = NULL;
+        }
+        if(!divideIrmao(arv, page->pai, 0, 1)){
+            return 0;
+        }
+        //Setando a nova raiz.
+        arv->raiz = page->pai;
+    }
+    return 1;
+}
+
+/*
+Descrição: Função que recebe uma página pai, e os indices das páginas filhas que serão divididas. A função olha qual dos filhos é nulo, e joga metade
+    dos elementos da outra página para essa nula. Aqui tem 2 casos, se a página original é da esquerda, nós pegamos a metade direita e jogamos para a
+    metade esquerda da página direita. Mas se a página original for da direita, nós pegamos a metade esquerda e jogamos para a metade esquerda da
+    página esquerda, e pegamos os elementos da metade direita da página original e jogamos na sua metade esquerda.
+Entrada: Ponteiro para a árvore, ponteiro para a página pai, indice do irmão esquerdo, indice do irmão direito.
+Saída: 1 - Sucesso, 0 - Erro.
+*/
+int divideIrmao(arvore *arv, pagina *pai, int irmaoEsq, int irmaoDir){
+    int final = arv->ordem, metade = 0;
+    if(arv->ordem % 2 == 0){
+        final = arv->ordem - 1;
+        metade = -1;
+    }
+    //Verificando qual é o elemento nulo.
+    if(!pai->filhos[irmaoEsq]){
+        //Filho esquerdo é o nulo.
+        //Criando página para o filho esquerdo.
+        pai->filhos[irmaoEsq] = criaPagina(arv);
+        if(!pai->filhos[irmaoEsq]){
+            return 0;
+        }
+        //Setando seu pai.
+        pai->filhos[irmaoEsq]->pai = pai;
+        //Jogando os elementos da esquerda do outro irmão para a esquerda dessa página, e arrumando o irmão.
+        for(int i = arv->ordem/2 - metade, j = 0; i < final; i++, j++){
+            pai->filhos[irmaoEsq]->chaves[j] = (chave*)malloc(sizeof(chave));
+            if(!pai->filhos[irmaoEsq]->chaves[j]){
+                free(pai->filhos[irmaoEsq]);
+                return 0;
+            }
+            pai->filhos[irmaoEsq]->chaves[j]->chave = pai->filhos[irmaoDir]->chaves[j]->chave;
+            pai->filhos[irmaoEsq]->chaves[j]->indice = pai->filhos[irmaoDir]->chaves[j]->indice;
+            pai->filhos[irmaoEsq]->nChaves += 1;
+            pai->filhos[irmaoDir]->chaves[j]->chave = pai->filhos[irmaoDir]->chaves[i]->chave;
+            pai->filhos[irmaoDir]->chaves[j]->indice = pai->filhos[irmaoDir]->chaves[i]->indice;
+            free(pai->filhos[irmaoDir]->chaves[i]);
+            pai->filhos[irmaoDir]->chaves[i] = NULL;
+            pai->filhos[irmaoDir]->nChaves -= 1;
+        }
+    }else if(!pai->filhos[irmaoDir]){
+        //Filho direito é o nulo.
+        //Criando página para o filho direito.
+        pai->filhos[irmaoDir] = criaPagina(arv);
+        if(!pai->filhos[irmaoDir]){
+            return 0;
+        }
+        //Setando seu pai.
+        pai->filhos[irmaoDir]->pai = pai;
+        //Jogando os elementos da direita do outro irmão para a esquerda dessa página.
+        for(int i = arv->ordem/2 - metade, j = 0; i < final; i++, j++){
+            pai->filhos[irmaoDir]->chaves[j] = (chave*)malloc(sizeof(chave));
+            if(!pai->filhos[irmaoDir]->chaves[j]){
+                free(pai->filhos[irmaoDir]);
+                return 0;
+            }
+            pai->filhos[irmaoDir]->chaves[j]->chave = pai->filhos[irmaoEsq]->chaves[i]->chave;
+            pai->filhos[irmaoDir]->chaves[j]->indice = pai->filhos[irmaoEsq]->chaves[i]->indice;
+            pai->filhos[irmaoDir]->nChaves += 1;
+            free(pai->filhos[irmaoEsq]->chaves[i]);
+            pai->filhos[irmaoEsq]->chaves[i] = NULL;
+            pai->filhos[irmaoEsq]->nChaves -= 1;
+        }
+    }
     return 1;
 }
