@@ -1,29 +1,42 @@
 #include <stdio.h>
 #include <string.h>
-#include "ArvoreB/arvore_B.h"
+#include "Arvore_B/arvore_B.h"
 #include "Entrada_Saida/ES.h"
 
-struct dado{
+struct registro {
     int mat;
-    char nome[6];
-    int vagabundo;
+    unsigned long long cpf;
+    char *nome, *dataNasc;
 };
 
 int main(void) {
-    FILE *arq = fopen("arquivo.txt", "r");
-    struct dado d;
+    FILE *arq;
     arvore *arv;
+    registro reg;
     int resp;
+    char nomeArquivo[12] = "entrada.txt";
+    unsigned long long nroRegistros;
 
-    if(!arq){
-        return 1;
+    printf("Já possui os arquivos de entrada?\n1 - Sim\n2 - Não\n0 - Sair\nOpção: ");
+    scanf(" %d", &resp);
+    if(resp == 2) {
+        printf("Quantidade de registros: ");
+        scanf(" %llu", &nroRegistros);
+        if(!criaEntrada(nomeArquivo, nroRegistros)) {
+            printf("Erro na criação do arquivo!");
+            return 1;
+        }
     }
+    else if(resp == 0)
+        return 0;
+    
 
     printf("\nQual será a ordem da árvore?\nResposta: ");
     scanf("%d", &resp);
 
     arv = criaArvore(resp);
     if(!arv){
+        printf("Erro na criação do arquivo de índice!");
         return 1;
     }
 
@@ -32,7 +45,10 @@ int main(void) {
         scanf("%d", &resp);
         switch (resp){
             case 1:
-                //criarIndice();
+                if(!processaEntrada(nomeArquivo)) {
+                    printf("Erro na abertura do arquivo!");
+                    return 1;
+                }
                 break;
             case 2:
                 //pesquisa();
@@ -44,5 +60,6 @@ int main(void) {
                 break;
         }
     }while(resp != 4);
+
     return 0;
 }
