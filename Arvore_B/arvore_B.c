@@ -123,7 +123,7 @@ int insereNo(arvore *arv, int valor, int indice){
             }
         }else{
             //Nó cheio
-            if(pageAtual->pai || pageAtual->pai->nChaves == arv->ordem - 1){
+            if(pageAtual->pai && pageAtual->pai->nChaves == arv->ordem - 1){
                 //Pai cheio
             }else{
                 //Tem espaço no pai
@@ -152,5 +152,51 @@ int insereFolha(pagina *page, int valor, int indice){
     page->chaves[pos + 1]->chave = valor;
     page->chaves[pos + 1]->indice = indice;
     page->nChaves+=1;
+    return 1;
+}
+
+int split(arvore *arv, pagina *page) {
+    pagina *newPage;
+    int pos=page->nChaves-1, meio=(page->nChaves - 1) / 2;
+    int esq, dir;
+    //Guarda o pai da página
+    pagina *pai = page->pai;
+    //Guarda a chave mediana da página
+    chave *chaveMed = page->chaves[meio];
+
+    //Insere a chave do meio de forma ordenada no pai
+    while(pos >= 0 && chaveMed->chave < pai->chaves[pos]->chave) {
+        pai->chaves[pos+1]->chave = pai->chaves[pos]->chave;
+        pai->chaves[pos+1]->indice = pai->chaves[pos]->indice;
+        pos--;
+    }
+    pai->chaves[pos + 1]->chave = chaveMed->chave;
+    pai->chaves[pos + 1]->indice = chaveMed->indice;
+    pai->nChaves++;
+
+    //Faz a subdivisão da página
+    newPage = criaPagina(arv);
+    //Subdivisão da esquerda
+    //Copia todos os elementos à esquerda de page para newPage
+    esq = meio - 1;
+    while(esq >= 0) {
+        newPage->chaves[esq]->chave = page->chaves[esq]->chave;
+        newPage->chaves[esq]->indice = page->chaves[esq]->indice;
+        newPage->nChaves++;
+        esq--;
+    }
+    //Subdivisão da direita
+    //Dá shift para a esquerda em todos os elemntos à direita de page
+    dir = meio + 1;
+    while(dir > 0) {
+        page->chaves[dir-1]->chave = page->chaves[dir]->chave;
+        page->chaves[dir-1]->indice = page->chaves[dir]->indice;
+        page->nChaves--;
+        dir--;
+    }
+
+    //Atualiza os ponteiros do pai
+    pai->filhos[pos-1] = newPage;
+    pai->filhos[pos] = page;
     return 1;
 }

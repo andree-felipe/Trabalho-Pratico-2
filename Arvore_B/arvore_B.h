@@ -42,3 +42,10 @@ Entrada: Ponteiro para a página onde será inserido, inteiro da chave, inteiro 
 Saída: 1 - Sucesso, 0 - Erro.
 */
 int insereFolha(pagina *page, int valor, int indice);
+
+/*
+Descriação: Função para rebalancear a árvore, fazendo as divisões das páginas.
+Entrada: Ponteiro para a árvore e ponteiro para a página que precisa de correção.
+Saída: 1 - Sucesso, 0 - Casos de erro.
+*/
+int split(arvore *arv, pagina *page);
