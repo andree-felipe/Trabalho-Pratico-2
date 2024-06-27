@@ -16,11 +16,7 @@ Descrição: Função para reorganizar a árvore por merge dos irmãos.
 Entrada: Ponteiro para página, ponteiro para árvore e 
 Saída: Ponteiro para a maior chave da subárvore esquerda.
 */
-<<<<<<< Updated upstream
-void merge(pagina *page, arvore *arv, int idx);
-=======
 void merge(pagina *page, arvore *arv, int pos);
->>>>>>> Stashed changes
 
 /*
 Descrição: Função para encontrar a maior chave na subárvore esquerda.
@@ -41,11 +37,7 @@ Descrição: Função auxiliar para buscar a posição de um elemento na página
 Entrada: Ponteiro para página e a chave a ser buscada.
 Saída: Posição para a chave procurada.
 */
-<<<<<<< Updated upstream
-int buscaIdx(pagina *pagina, int chave);
-=======
 int buscaPos(pagina *pagina, int chave);
->>>>>>> Stashed changes
 
 /*
 Descrição: Função para remover chave de folha.

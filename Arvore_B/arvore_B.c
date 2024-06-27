@@ -24,56 +24,33 @@ struct arvore{
 
 /*** -- Funções -- ***/
 
-<<<<<<< Updated upstream
-void merge(pagina *page, arvore *arv, int idx){
-    int i = 0;
-    // Idx indica a posição do pai direto entre as paginas do merge
-    pagina *filho = page->filhos[idx];
-    pagina *irmao = page->filhos[idx + 1];
-
-    filho->chaves[filho->nChaves] = page->chaves[idx];
-    while(filho->nChaves){
-        // Move as chaves do irmão para o outro (filho).
-        irmao->chaves[irmao->nChaves+i] = filho->chaves[i];
-        filho->nChaves--;
-        i++;
-    }
-    if(page->pai->nChaves < arv->ordem%2)
-        merge(page->pai, arv, idx);
-=======
 void merge(pagina *page, arvore *arv, int pos){
-    int i = 0;
-    // Idx indica a posição do pai direto entre as paginas do merge
-    pagina *filho = page->filhos[pos];
-    pagina *irmao = page->filhos[pos + 1];
-
+    int i = 0, idx = pos;
+    if(idx == arv->ordem)
+        idx--;
+    pagina *filho = page->filhos[idx];
+    pagina *irmao = page->filhos[idx+1];
+    
     irmao->chaves[irmao->nChaves] = page->chaves[pos];
     irmao->nChaves++;
-    page->chaves[pos] = NULL;
     free(page->chaves[pos]);
     page->pai->nChaves--;
 
     while(filho->nChaves){
         // Move as chaves do irmão para o outro (filho).
         filho->chaves[filho->nChaves+i] = irmao->chaves[i];
-        irmao->chaves[i] = NULL;
+        // irmao->chaves[i] = NULL;
         irmao->nChaves--;
         i++;
     }
-        free(irmao->chaves);
+    free(irmao->chaves);
 
-    if(page->pai->nChaves < arv->ordem/2)
+    if(page->nChaves < arv->ordem/2)
         merge(page->pai, arv, pos);
->>>>>>> Stashed changes
 }
 
-// Função recursiva para buscar a chave na árvore B
 pagina *buscaChave(struct pagina *page, int chave) {
-<<<<<<< Updated upstream
-    int i = buscaIdx(page, chave);
-=======
     int i = buscaPos(page, chave);
->>>>>>> Stashed changes
     // Se a chave é encontrada nesta página, retorna a página
     if (i < page->nChaves && page->chaves[i]->chave == chave) {
         return page;
@@ -95,23 +72,6 @@ chave *encontraAntecessor(pagina *pagina) {
 }
 
 
-<<<<<<< Updated upstream
-// Função auxiliar para buscar o idx de uma página
-int buscaIdx(pagina *pagina, int chave) {
-    int idx = 0;
-    while (idx < pagina->nChaves && chave > pagina->chaves[idx]->chave) {
-        idx++;
-    }
-    return idx;
-}
-
-void removeDeFolha(pagina *page, int idx){
-    for(idx ; idx < page->nChaves ; idx++){
-        page->chaves[idx] = page->chaves[idx+1];
-    }
-    page->chaves[idx] = NULL;
-=======
-// Função auxiliar para buscar o pos de uma página
 int buscaPos(pagina *pagina, int chave) {
     int pos = 0;
     while (pos < pagina->nChaves && chave > pagina->chaves[pos]->chave) {
@@ -124,23 +84,15 @@ void removeDeFolha(pagina *page, int pos){
     for(pos ; pos < page->nChaves ; pos++){
         page->chaves[pos] = page->chaves[pos+1];
     }
-    page->chaves[pos] = NULL;
->>>>>>> Stashed changes
+    free(page->chaves[pos]);
     page->nChaves--;
     return;
 }
 
-<<<<<<< Updated upstream
-void removeDeNaoFolha(pagina *page, int idx){
-    int k = page->chaves[idx]->chave;
-    page->chaves[idx]->chave = encontraAntecessor(page);
-    removeDeFolha(buscaChave(page, page->chaves[idx]->chave), buscaIdx(page, k));
-=======
 void removeDeNaoFolha(pagina *page, int pos){
-    int k = page->chaves[pos]->chave;
-    page->chaves[pos]->chave = encontraAntecessor(page);
-    removeDeFolha(buscaChave(page, page->chaves[pos]->chave), buscaPos(page, k));
->>>>>>> Stashed changes
+    int chaves = page->chaves[pos]->chave;
+    page->chaves[pos] = encontraAntecessor(page);
+    removeDeFolha(buscaChave(page, page->chaves[pos]->chave), buscaPos(page, chaves));
     return;
 }
 
