@@ -24,11 +24,6 @@ struct arvore{
 
 /*** -- Funções -- ***/
 
-/*
-Descrição: Cria uma estrutura da árvore b.
-Entrada: Inteiro da ordem da árvore.
-Saída: Ponteiro para a árvore; NULL em caso de erro.
-*/
 arvore *criaArvore(int ordem){
     arvore *arv = (arvore*)malloc(sizeof(arvore));
     if(!arv){
@@ -40,281 +35,168 @@ arvore *criaArvore(int ordem){
     return arv;
 }
 
-/*
-Descrição: Retorna a raiz da árvore.
-Entrada: Ponteiro para a árvore b.
-Saída: Ponteiro para a raiz da árvore.
-*/
 pagina *getRaiz(arvore *arv){
     return arv->raiz;
 }
 
 /*
-Descrição: Cria uma estrutura da página.
-Entrada: Ponteiro para a árvore b.
+Descrição: Cria uma estrutura de página para a raiz.
+Entrada: Ponteiro para a árvore b, estrutura com os valores iniciais, ponteiro para uma página filha.
 Saída: Ponteiro para a página; NULL em caso de erro.
 */
-pagina *criaPagina(arvore *arv){
-    pagina *page = (pagina*)malloc(sizeof(pagina));
-    if(!page){
+pagina *criaRaiz(arvore *arv, chave valor, pagina *filho){
+    //Criando a raiz.
+    pagina *raiz = (pagina*)malloc(sizeof(pagina));
+    if(!raiz){
         return NULL;
     }
+    //Criando espaço para as chaves e os filhos.
     if(arv->ordem % 2 == 0){
-        page->chaves = (chave**)malloc(sizeof(chave*) * (arv->ordem - 1));
+        raiz->chaves = (chave**)malloc(sizeof(chave*) * (arv->ordem - 1));
     }else{
-        page->chaves = (chave**)malloc(sizeof(chave*) * (arv->ordem));
+        raiz->chaves = (chave**)malloc(sizeof(chave*) * (arv->ordem));
     }
-    if(!page->chaves){
-        free(page);
+    if(!raiz->chaves){
+        free(raiz);
         return NULL;
     }
-    for(int i = 0; i < arv->ordem-1; i++){
-        page->chaves[i] = NULL;
+    raiz->filhos = (pagina**)malloc(sizeof(pagina*) * (arv->ordem));
+    if(!raiz->filhos){
+        free(raiz->chaves);
+        free(raiz);
+        return NULL;
     }
+    //Setando os elementos iniciais.
+    if(filho){
+        //Se o filho existe, não é folha.
+        raiz->folha = 0;
+    }else{
+        //Se o filho não existe, é folha.
+        raiz->folha = 1;
+    }
+    raiz->pai = NULL;
+    raiz->chaves[0] = (chave*)malloc(sizeof(chave));
+    if(!raiz->chaves[0]){
+        free(raiz->filhos);
+        free(raiz->chaves);
+        free(raiz);
+        return NULL;
+    }
+    raiz->chaves[0]->chave = valor.chave;
+    raiz->chaves[0]->indice = valor.indice;
+    raiz->nChaves = 1;
+    raiz->filhos[0] = arv->raiz;
+    raiz->filhos[1] = filho;
+    //Setando o resto como nulo.
+    raiz->chaves[1] = NULL;
+    for(int i = 2; i < arv->ordem-1; i++){
+        raiz->chaves[i] = NULL;
+        raiz->filhos[i] = NULL;
+    }
+    raiz->filhos[arv->ordem - 1] = NULL;
     if(arv->ordem % 2 == 1){
-        page->chaves[arv->ordem-1] = NULL;
+        raiz->chaves[arv->ordem-1] = NULL;
     }
-    page->pai = NULL;
-    page->filhos = NULL;
-    page->nChaves = 0;
-    page->folha = 1;
-    return page;
+    return raiz;
+}
+
+int insere(arvore *arv, chave valor) {
+    int cond;
+    chave reg;
+    pagina *filho;
+
+    cond = insereChave(arv, valor, &reg, arv, &filho);
+    if(cond) { //Significa que a árvore está cheia
+        //Cria uma nova raiz
+        arv->raiz = criaRaiz(arv, valor, filho);
+        if(!arv->raiz)
+            return 0;
+    }
+    return 1;
 }
 
 /*
-Descrição: Insere um elemento na árvore, e chama as funções de correção dependendo do caso.
-Entrada: Ponteiro para a árvore b, inteiro da chave, inteiro da linha.
-Saída: 1 - Sucesso, 0 - Erro.
+Descrição:
+Entrada:
+Saída: 
 */
-int insereNo(arvore *arv, int valor, int indice){
-    pagina *pageAtual, *pageAux; //pageAtual percorre a árvore, pageAux auxilia salvando o pai.
-    //Verificando se a árvore está vazia, se estiver apenas cria uma página e vincula com a raiz, se não estiver procure a página.
-    if(!arv->numElementos){
-        arv->raiz = criaPagina(arv);
-        if(!arv->raiz){
-            return 0;
-        }
-        arv->raiz->chaves[0] = (chave*)malloc(sizeof(chave));
-        if(!arv->raiz->chaves[0]){
-            free(arv->raiz);
-            return 0;
-        }
-        arv->raiz->chaves[0]->chave = valor;
-        arv->raiz->chaves[0]->indice = indice;
-        arv->raiz->nChaves = 1;
-    }else{
-        pageAtual = arv->raiz;
-        //Enquanto o pageAtual não chegar na folha, continue procurando.
-        while(!pageAtual->folha){
-            pageAux = pageAtual; //Salvando o pai.
-            //Verificando em qual filho entrar.
-            for(int i = 0; i < pageAux->nChaves && pageAtual == pageAux; i++){
-                if(valor < pageAux->chaves[i]->chave){
-                    pageAtual = pageAux->filhos[i];
-                }else if(i == pageAux->nChaves - 1){
-                    pageAtual = pageAux->filhos[i+1];
-                }
-            }
-        }
-        //Verificando se a página atual está cheia, se não estiver insere a nova chave, se estiver split.
-        if(pageAtual->nChaves < arv->ordem - 1){
-            if(!insereFolha(pageAtual, valor, indice)){
-                return 0;
-            }
+int inserePagina(pagina *page, pagina *filho, chave valor, int pos) {
+    return 1;
+}
+
+int insereChave(arvore *arv, chave registro, chave *pontReg, pagina *page, pagina **filho) {
+    int pos; //Representa o filho na qual a chave entra.
+    if(!page){
+        //Se a página for nula, chegamos a uma folha.
+        *filho = NULL; //Setando como nulo, pois não tem filho.
+        *pontReg = registro; //Salvando o próprio registro.
+        return 1;
+    }
+    //Procurando em qual filho entra a chave.
+    for(pos = 0; pos < page->nChaves && registro.chave > page->chaves[pos]->chave; pos++);
+    //Se a recursiva desse função, com o filho[pos], for 0 a execução acaba, se for 1 insere ou da split.
+    if(insereChave(arv, registro, pontReg, page->filhos[pos], filho)){
+        //Se tem espaço na página, insere o registro, se não tem espaço da split.
+        if(page->nChaves < arv->ordem - 1){
+            inserePagina(page, *filho, registro, pos);
         }else{
-            //Nó cheio -> Duas abordagens: Ordem par divide e depois insere, ordem ímpar insere e depois divide.
-            if(arv->ordem % 2 == 0){
-                //Ordem par
-            }else{
-                //Ordem ímpar
-                if(!insereFolha(pageAtual, valor, indice)){
-                    return 0;
-                }
+            if(split(registro, pontReg, page, *filho, filho, pos)){
+                return 1;
             }
-//            if(pageAtual->pai && pageAtual->pai->nChaves == arv->ordem - 1){
-//                //Pai cheio
-//            }else{
-//                //Tem espaço no pai
-//            }
         }
     }
-    arv->numElementos+=1;
-    return 1;
+    return 0;
 }
 
-/*
-Descrição: Aloca uma nova estrutura de chave, e salva ela na lista de chaves da página.
-Entrada: Ponteiro para a página onde será inserido, inteiro da chave, inteiro da linha.
-Saída: 1 - Sucesso, 0 - Erro.
-*/
-int insereFolha(pagina *page, int valor, int indice){
-    int pos = page->nChaves - 1;
-    page->chaves[pos + 1] = (chave*)malloc(sizeof(chave));
-    if(!page->chaves[pos + 1]){
+int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **newPage, int pos) {
+    int mediana=page->nChaves / 2;
+    int i=0;
+
+    //Cria a nova página para realizar a divisão dos elementos
+    *newPage = (pagina*)malloc(sizeof(pagina));
+    if(!*newPage)
         return 0;
-    }
-    while(pos >= 0 && valor < page->chaves[pos]->chave){
-        page->chaves[pos+1]->chave = page->chaves[pos]->chave;
-        page->chaves[pos+1]->indice = page->chaves[pos]->indice;
-        pos--;
-    }
-    page->chaves[pos + 1]->chave = valor;
-    page->chaves[pos + 1]->indice = indice;
-    page->nChaves+=1;
-    return 1;
-}
 
-int split(arvore *arv, pagina *page) {
-    pagina *newPage;
-    int pos=page->nChaves-1, meio=(page->nChaves - 1) / 2;
-    int esq, dir;
-    //Guarda o pai da página
-    pagina *pai = page->pai;
-    //Guarda a chave mediana da página
-    chave *chaveMed = page->chaves[meio];
+    (*newPage)->chaves = (chave**)malloc(page->nChaves * sizeof(chave*));
+    if(!((*newPage)->chaves))
+        return 0;
+    (*newPage)->filhos = (pagina**)malloc((page->nChaves + 1) * sizeof(pagina*));
+    if(!((*newPage)->filhos))
+        return 0;
 
-    //Insere a chave do meio de forma ordenada no pai
-    while(pos >= 0 && chaveMed->chave < pai->chaves[pos]->chave) {
-        pai->chaves[pos+1]->chave = pai->chaves[pos]->chave;
-        pai->chaves[pos+1]->indice = pai->chaves[pos]->indice;
-        pos--;
-    }
-    pai->chaves[pos + 1]->chave = chaveMed->chave;
-    pai->chaves[pos + 1]->indice = chaveMed->indice;
-    pai->nChaves++;
+    //Insere os elementos da parte direita da página cheia na nova página
+    for(int i=mediana+1; i<page->nChaves;i++) {
+        (*newPage)->chaves[i - mediana] = (chave*)malloc(sizeof(chave));
+        if(!(*newPage)->chaves[i - mediana])
+            return 0;
+            
+        (*newPage)->filhos[i - mediana] = (pagina*)malloc(sizeof(pagina));
+        if(!(*newPage)->filhos[i - mediana])
+            return 0;
 
-    //Faz a subdivisão da página
-    newPage = criaPagina(arv);
-    //Subdivisão da esquerda
-    //Copia todos os elementos à esquerda de page para newPage
-    esq = meio - 1;
-    while(esq >= 0) {
-        newPage->chaves[esq]->chave = page->chaves[esq]->chave;
-        newPage->chaves[esq]->indice = page->chaves[esq]->indice;
-        newPage->nChaves++;
-        esq--;
+        (*newPage)->chaves[i - mediana] = page->chaves[i];
+        (*newPage)->filhos[i - mediana] = page->filhos[i];
     }
-    //Subdivisão da direita
-    //Dá shift para a esquerda em todos os elemntos à direita de page
-    dir = meio + 1;
-    while(dir > 0) {
-        page->chaves[dir-1]->chave = page->chaves[dir]->chave;
-        page->chaves[dir-1]->indice = page->chaves[dir]->indice;
-        page->nChaves--;
-        dir--;
-    }
+    (*newPage)->filhos[mediana] = page->filhos[page->nChaves];
 
-    //Atualiza os ponteiros do pai
-    pai->filhos[pos-1] = newPage;
-    pai->filhos[pos] = page;
-    return 1;
-}
 
-/*
-Descrição: Função que insere um elemento em um pai, sendo que a árvore é de ordem ímpar.
-Entrada: Ponteiro para a árvore, ponteiro para a página onde o elemento original foi inserido, valor do elemento que será inserido no pai, e indice.
-Saída: 1 - Sucesso, 0 - Erro.
-*/
-int inserePImpar(arvore *arv, pagina *page, int valor, int indice){
-    if(!page->pai){
-        //O nó é uma raiz.
-        //Criando uma página para o pai.
-        page->pai = criaPagina(arv);
-        if(!page->pai){
-            return 0;
-        }
-        //Setando sua condição como não folha, e criando sua primeira chave.
-        page->pai->folha = 0;
-        page->pai->chaves[0] = (chave*)malloc(sizeof(chave));
-        if(!page->pai->chaves[0]){
-            free(page->pai);
-            return 0;
-        }
-        page->pai->chaves[0]->chave = valor;
-        page->pai->chaves[0]->indice = indice;
-        //Criando seus dois filhos.
-        page->pai->filhos = (pagina**)malloc(sizeof(pagina*) * arv->ordem);
-        if(!page->pai->filhos){
-            free(page->pai->chaves[0]);
-            free(page->pai);
-            return 0;
-        }
-        page->pai->filhos[0] = page;
-        for(int i = 1; i <= arv->ordem; i++){
-            page->pai->filhos[i] = NULL;
-        }
-        if(!divideIrmao(arv, page->pai, 0, 1)){
-            return 0;
-        }
-        //Setando a nova raiz.
-        arv->raiz = page->pai;
-    }
-    return 1;
-}
+    //Atualiza as variáveis com as novas quantidades de chaves
+    (*newPage)->nChaves = page->nChaves - mediana;
+    page->nChaves = mediana;
 
-/*
-Descrição: Função que recebe uma página pai, e os indices das páginas filhas que serão divididas. A função olha qual dos filhos é nulo, e joga metade
-    dos elementos da outra página para essa nula. Aqui tem 2 casos, se a página original é da esquerda, nós pegamos a metade direita e jogamos para a
-    metade esquerda da página direita. Mas se a página original for da direita, nós pegamos a metade esquerda e jogamos para a metade esquerda da
-    página esquerda, e pegamos os elementos da metade direita da página original e jogamos na sua metade esquerda.
-Entrada: Ponteiro para a árvore, ponteiro para a página pai, indice do irmão esquerdo, indice do irmão direito.
-Saída: 1 - Sucesso, 0 - Erro.
-*/
-int divideIrmao(arvore *arv, pagina *pai, int irmaoEsq, int irmaoDir){
-    int final = arv->ordem, metade = 0;
-    if(arv->ordem % 2 == 0){
-        final = arv->ordem - 1;
-        metade = -1;
-    }
-    //Verificando qual é o elemento nulo.
-    if(!pai->filhos[irmaoEsq]){
-        //Filho esquerdo é o nulo.
-        //Criando página para o filho esquerdo.
-        pai->filhos[irmaoEsq] = criaPagina(arv);
-        if(!pai->filhos[irmaoEsq]){
-            return 0;
-        }
-        //Setando seu pai.
-        pai->filhos[irmaoEsq]->pai = pai;
-        //Jogando os elementos da esquerda do outro irmão para a esquerda dessa página, e arrumando o irmão.
-        for(int i = arv->ordem/2 - metade, j = 0; i < final; i++, j++){
-            pai->filhos[irmaoEsq]->chaves[j] = (chave*)malloc(sizeof(chave));
-            if(!pai->filhos[irmaoEsq]->chaves[j]){
-                free(pai->filhos[irmaoEsq]);
-                return 0;
-            }
-            pai->filhos[irmaoEsq]->chaves[j]->chave = pai->filhos[irmaoDir]->chaves[j]->chave;
-            pai->filhos[irmaoEsq]->chaves[j]->indice = pai->filhos[irmaoDir]->chaves[j]->indice;
-            pai->filhos[irmaoEsq]->nChaves += 1;
-            pai->filhos[irmaoDir]->chaves[j]->chave = pai->filhos[irmaoDir]->chaves[i]->chave;
-            pai->filhos[irmaoDir]->chaves[j]->indice = pai->filhos[irmaoDir]->chaves[i]->indice;
-            free(pai->filhos[irmaoDir]->chaves[i]);
-            pai->filhos[irmaoDir]->chaves[i] = NULL;
-            pai->filhos[irmaoDir]->nChaves -= 1;
-        }
-    }else if(!pai->filhos[irmaoDir]){
-        //Filho direito é o nulo.
-        //Criando página para o filho direito.
-        pai->filhos[irmaoDir] = criaPagina(arv);
-        if(!pai->filhos[irmaoDir]){
-            return 0;
-        }
-        //Setando seu pai.
-        pai->filhos[irmaoDir]->pai = pai;
-        //Jogando os elementos da direita do outro irmão para a esquerda dessa página.
-        for(int i = arv->ordem/2 - metade, j = 0; i < final; i++, j++){
-            pai->filhos[irmaoDir]->chaves[j] = (chave*)malloc(sizeof(chave));
-            if(!pai->filhos[irmaoDir]->chaves[j]){
-                free(pai->filhos[irmaoDir]);
-                return 0;
-            }
-            pai->filhos[irmaoDir]->chaves[j]->chave = pai->filhos[irmaoEsq]->chaves[i]->chave;
-            pai->filhos[irmaoDir]->chaves[j]->indice = pai->filhos[irmaoEsq]->chaves[i]->indice;
-            pai->filhos[irmaoDir]->nChaves += 1;
-            free(pai->filhos[irmaoEsq]->chaves[i]);
-            pai->filhos[irmaoEsq]->chaves[i] = NULL;
-            pai->filhos[irmaoEsq]->nChaves -= 1;
-        }
-    }
+    //Procura onde deverá inserir o novo registro
+    if(pos <= page->chaves-1)
+        //Página atual
+        inserePagina(page, filho, valor, pos);
+    else
+        //Nova página criada
+        inserePagina(*newPage, filho, valor, pos - mediana);
+
+    //Guardando a chave mediana na variável "pontReg" para uso posterior
+    (*pontReg).chave = page->chaves[page->nChaves]->chave;
+    (*pontReg).indice = page->chaves[page->nChaves]->indice;
+    (*newPage)->filhos[0] = page->filhos[page->nChaves];
+    //Chave mediana removida da página analisada
+    page->nChaves--;
     return 1;
 }
