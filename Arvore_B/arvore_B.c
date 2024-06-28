@@ -85,6 +85,7 @@ pagina *criaRaiz(arvore *arv, chave valor, pagina *filho){
         raiz->folha = 1;
     }
     raiz->pai = NULL;
+    //Creio que não precisa criar espaço para essa chave.
     raiz->chaves[0] = (chave*)malloc(sizeof(chave));
     if(!raiz->chaves[0]){
         free(raiz->filhos);
