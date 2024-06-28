@@ -54,7 +54,7 @@ Descrição: Cria uma estrutura de página para a raiz.
 Entrada: Ponteiro para a árvore b, estrutura com os valores iniciais, ponteiro para uma página filha.
 Saída: Ponteiro para a página; NULL em caso de erro.
 */
-pagina *criaRaiz(arvore *arv, chave valor, pagina *filho){
+pagina *criaRaiz(arvore *arv, chave *valor, pagina *filho){
     //Criando a raiz.
     pagina *raiz = (pagina*)malloc(sizeof(pagina));
     if(!raiz){
@@ -85,19 +85,16 @@ pagina *criaRaiz(arvore *arv, chave valor, pagina *filho){
         raiz->folha = 1;
     }
     raiz->pai = NULL;
-    //Creio que não precisa criar espaço para essa chave.
-    raiz->chaves[0] = (chave*)malloc(sizeof(chave));
-    if(!raiz->chaves[0]){
-        free(raiz->filhos);
-        free(raiz->chaves);
-        free(raiz);
-        return NULL;
-    }
-    raiz->chaves[0]->chave = valor.chave;
-    raiz->chaves[0]->indice = valor.indice;
+    raiz->chaves[0] = valor;
     raiz->nChaves = 1;
     raiz->filhos[0] = arv->raiz;
+    if(raiz->filhos[0]){
+        raiz->filhos[0]->pai = raiz;
+    }
     raiz->filhos[1] = filho;
+    if(raiz->filhos[1]){
+        raiz->filhos[1]->pai = raiz;
+    }
     //Setando o resto como nulo.
     raiz->chaves[1] = NULL;
     for(int i = 2; i < arv->ordem-1; i++){
@@ -112,19 +109,59 @@ pagina *criaRaiz(arvore *arv, chave valor, pagina *filho){
 }
 
 /*
-Descrição: Função para inserção no arquivo de índice.
-Entrada: Ponteiro para a raiz da árvore, registro a ser inserido.
+Descrição: Função responsável por criar uma nova página para o split (por enquanto só aceita ordem par).
+Entrada: Quantidade de chaves (arv->ordem - 1).
+Saída: Ponteiro para a nova página;
+*/
+pagina *criaPagina(int quantidade){
+    //Criando página.
+    pagina *newPage = (pagina*)malloc(sizeof(pagina));
+    if(!newPage){
+        return NULL;
+    }
+    //Alocando espaço para seus ponteiros de ponteiros.
+    newPage->chaves = (chave**)malloc(sizeof(chave*) * (quantidade));
+    if(!newPage->chaves){
+        free(newPage);
+        return NULL;
+    }
+    newPage->filhos = (pagina**)malloc(sizeof(pagina*) * (quantidade + 1));
+    if(!newPage->filhos){
+        free(newPage->chaves);
+        free(newPage);
+        return NULL;
+    }
+    //Inicializando tudo como nulo.
+    for(int i = 0; i < quantidade; i++){
+        newPage->chaves[i] = NULL;
+        newPage->filhos[i] = NULL;
+    }
+    newPage->filhos[quantidade] = NULL;
+    return newPage;
+}
+
+/*
+Descrição: Função de inserção de um elemento na árvore. Aloca um bloco para guardar o registro e passa o ponteiro dele para a insereChave ou criaRaiz,
+    esse ponteiro pode apontar para outros blocos durante a execução da insereChave, mas isso significa que o bloco original já está salvo por outro
+    ponteiro, e isso só acontecerá se um split ocorrer.
+Entrada: Ponteiro para a raiz da árvore, inteiro da matrícula (chave principal), inteiro do índice (linha no arquivo).
 Saída: 1 - Sucesso, 0 - Casos de erro.
 */
-int insere(arvore *arv, chave valor) {
-    int cond;
-    chave reg;
-    pagina *filho;
-
-    cond = insereChave(arv, valor, &reg, arv->raiz, &filho);
+int insere(arvore *arv, int matricula, int indice) {
+    int cond; //Verifica se a árvore está cheia, e necessita de uma nova raiz.
+    chave *registro = (chave*)malloc(sizeof(chave)); //Aloca um novo bloco para o registro.
+    pagina *filho; //Representa o filho da página atual, é setado na insereChave.
+    if(!registro){
+        return 0;
+    }
+    //Salvando os dados no registro.
+    registro->chave = matricula;
+    registro->indice = indice;
+    //Chamando a função responsável por identificar o que fazer com o novo elemento.
+    cond = insereChave(arv, registro, arv->raiz, &filho);
     if(cond) { //Significa que a árvore está cheia
         //Cria uma nova raiz
-        arv->raiz = criaRaiz(arv, valor, filho);
+        arv->raiz = criaRaiz(arv, registro, filho);
         if(!arv->raiz)
             return 0;
     }
@@ -132,29 +169,42 @@ int insere(arvore *arv, chave valor) {
 }
 
 /*
-Descrição: Função recursiva que encontra em qual filho está o novo registro, até chegar em uma folha. Quando chegar na folha, verifica
-    se há espaço, se houver insere nela, se não houver divide o nó e recursivamente vincula com o pai.
-Entrada: Ponteiro para a árvore b, estrutura com os valores, ponteiro para os valores (serão alterados na split), ponteiro para a página atual,
-    ponteiro de ponteiro para o filho (usada para guardar o novo nó da split na estrutura criada na insere).
-Saída: 1 - ou insere, ou da split, ou cria uma nova raiz (são tratados nas funções), 0 - encerra a execução.
+Descrição: Função que insere um registro em uma página.
+Entrada: Ponteiro para a página, ponteiro para o filho do registro, ponteiro para o registro, inteiro da posição onde o registro entra.
+Saída: Nada.
 */
-int insereChave(arvore *arv, chave registro, chave *pontReg, pagina *page, pagina **filho){
+void inserePagina(pagina *page, pagina *filho, chave *registro, int pos){
+    for(int i = page->nChaves; i != pos; i--){
+        page->chaves[i] = page->chaves[i - 1];
+        page->filhos[i+1] = page->filhos[i];
+    }
+    page->chaves[pos] = registro;
+    page->filhos[pos + 1] = filho;
+}
+
+/*
+Descrição: Função que procura em qual filho vai o registro, se for folha significa que achou a posição dele na chave. E faz isso recursivamente,
+    decidindo se vai inserir, dar split, ou não fazer nada.
+Entrada: Ponteiro para a árvore b, ponteiro para o registro (será alterado na split), ponteiro para a página atual,
+    ponteiro de ponteiro para o filho (usada para guardar a nova página da split na estrutura criada na insere).
+Saída: 1 - ou insere, ou da split, ou cria uma nova raiz (são tratados nas funções), 0 - Encerra a execução.
+*/
+int insereChave(arvore *arv, chave *registro, pagina *page, pagina **filho){
     int pos; //Representa o filho na qual a chave entra.
     if(!page){
         //Se a página for nula, chegamos a uma folha.
         *filho = NULL; //Setando como nulo, pois não tem filho.
-        *pontReg = registro; //Salvando o próprio registro.
         return 1;
     }
-    //Procurando em qual filho entra a chave.
-    for(pos = 0; pos < page->nChaves && registro.chave > page->chaves[pos]->chave; pos++);
+    //Procurando em qual filho/posição entra a chave.
+    for(pos = 0; pos < page->nChaves && registro->chave > page->chaves[pos]->chave; pos++);
     //Se a recursiva desse função, com o filho[pos], for 0 a execução acaba, se for 1 insere ou da split.
-    if(insereChave(arv, registro, pontReg, page->filhos[pos], filho)){
+    if(insereChave(arv, registro, page->filhos[pos], filho)){
         //Se tem espaço na página, insere o registro, se não tem espaço da split.
         if(page->nChaves < arv->ordem - 1){
             inserePagina(page, *filho, registro, pos);
         }else{
-            if(split(registro, pontReg, page, *filho, filho, pos)){
+            if(split(registro, page, *filho, filho, pos)){
                 return 1;
             }
         }
@@ -163,25 +213,20 @@ int insereChave(arvore *arv, chave registro, chave *pontReg, pagina *page, pagin
 }
 
 /*
-Descrição: Função para corrigir o balanceamento da árvore, realizando a subdivisão da página cheia em duas novas páginas
-Entrada: A chave desejada, um endereço para a variável que irá guardar a chave mediana, a página cheia, a página filho,
-         um endereço para o novo filho, a posição que será inserida a chave desejada
+Descrição: Função para corrigir o balanceamento da árvore, realizando a subdivisão da página cheia em duas novas páginas.
+Entrada: Ponteiro para o registro, ponteiro para a página cheia, ponteiro para o filho, ponteiro de ponteiros para a nova página (novo filho),
+    inteiro da posição.
 Saída: 1 - Sucesso, 0 - Casos de erro
 */
-int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **newPage, int pos) {
+int split(chave *registro, pagina *page, pagina *filho, pagina **newPage, int pos) {
     int mediana=page->nChaves / 2; //Número de chaves sempre vai ser ímpar, logo a metade é o inteiro resultante da divisão por 2.
-
     //Cria a nova página para realizar a divisão dos elementos, e cria espaço para seus ponteiros de ponteiros.
-    *newPage = (pagina*)malloc(sizeof(pagina));
-    if(!*newPage)
+    *newPage = criaPagina(page->nChaves);
+    if(!*newPage){
         return 0;
-    (*newPage)->chaves = (chave**)malloc(page->nChaves * sizeof(chave*));
-    if(!((*newPage)->chaves))
-        return 0;
-    (*newPage)->filhos = (pagina**)malloc((page->nChaves + 1) * sizeof(pagina*));
-    if(!((*newPage)->filhos))
-        return 0;
-    //O certo seria deixar eles nulos, podemos criar uma função para criar essa página também.
+    }
+    (*newPage)->folha = page->folha;
+    (*newPage)->pai = page->pai;
 
     //Insere os elementos da parte direita da página cheia na nova página.
     for(int i=mediana+1; i<page->nChaves;i++) {
@@ -206,15 +251,14 @@ int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **new
     //Procura onde deverá inserir o novo registro
     if(pos <= page->nChaves-1)
         //Página atual
-        inserePagina(page, filho, valor, pos);
+        inserePagina(page, filho, registro, pos);
     else
         //Nova página criada
-        inserePagina(*newPage, filho, valor, pos - mediana);
+        inserePagina(*newPage, filho, registro, pos - mediana - 1);
 
-    //Guardando a chave mediana na variável "pontReg" para uso posterior
-    (*pontReg).chave = page->chaves[page->nChaves-1]->chave;
-    (*pontReg).indice = page->chaves[page->nChaves-1]->indice;
-    //Chave mediana removida da página analisada
+    //A chave que vai subir para o pai é a chave na posição da mediana na página analisada, aqui fazemos o nosso ponteiro apontar para essa chave.
+    registro = page->chaves[page->nChaves-1];
+    //Chave mediana removida da página analisada.
     page->nChaves--;
     page->chaves[page->nChaves] = NULL;
     return 1;
