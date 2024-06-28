@@ -75,6 +75,7 @@ pagina *criaRaiz(arvore *arv, chave valor, pagina *filho){
         raiz->folha = 1;
     }
     raiz->pai = NULL;
+    //Creio que não precisa criar espaço para essa chave.
     raiz->chaves[0] = (chave*)malloc(sizeof(chave));
     if(!raiz->chaves[0]){
         free(raiz->filhos);
@@ -105,7 +106,7 @@ int insere(arvore *arv, chave valor) {
     chave reg;
     pagina *filho;
 
-    cond = insereChave(arv, valor, &reg, arv, &filho);
+    cond = insereChave(arv, valor, &reg, arv->raiz, &filho);
     if(cond) { //Significa que a árvore está cheia
         //Cria uma nova raiz
         arv->raiz = criaRaiz(arv, valor, filho);
@@ -149,43 +150,42 @@ int insereChave(arvore *arv, chave registro, chave *pontReg, pagina *page, pagin
 }
 
 int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **newPage, int pos) {
-    int mediana=page->nChaves / 2;
-    int i=0;
+    int mediana=page->nChaves / 2; //Número de chaves sempre vai ser ímpar, logo a metade é o inteiro resultante da divisão por 2.
 
-    //Cria a nova página para realizar a divisão dos elementos
+    //Cria a nova página para realizar a divisão dos elementos, e cria espaço para seus ponteiros de ponteiros.
     *newPage = (pagina*)malloc(sizeof(pagina));
     if(!*newPage)
         return 0;
-
     (*newPage)->chaves = (chave**)malloc(page->nChaves * sizeof(chave*));
     if(!((*newPage)->chaves))
         return 0;
     (*newPage)->filhos = (pagina**)malloc((page->nChaves + 1) * sizeof(pagina*));
     if(!((*newPage)->filhos))
         return 0;
+    //O certo seria deixar eles nulos, podemos criar uma função para criar essa página também.
 
-    //Insere os elementos da parte direita da página cheia na nova página
+    //Insere os elementos da parte direita da página cheia na nova página.
     for(int i=mediana+1; i<page->nChaves;i++) {
-        (*newPage)->chaves[i - mediana] = (chave*)malloc(sizeof(chave));
-        if(!(*newPage)->chaves[i - mediana])
-            return 0;
-            
-        (*newPage)->filhos[i - mediana] = (pagina*)malloc(sizeof(pagina));
-        if(!(*newPage)->filhos[i - mediana])
-            return 0;
-
-        (*newPage)->chaves[i - mediana] = page->chaves[i];
-        (*newPage)->filhos[i - mediana] = page->filhos[i];
+        (*newPage)->chaves[i - mediana - 1] = page->chaves[i];
+        (*newPage)->filhos[i - mediana - 1] = page->filhos[i];
+        if(page->filhos[i]){
+            page->filhos[i]->pai = *newPage;
+        }
+        page->chaves[i] = NULL;
+        page->filhos[i] = NULL;
     }
     (*newPage)->filhos[mediana] = page->filhos[page->nChaves];
+    if(page->filhos[page->nChaves]){
+        page->filhos[page->nChaves]->pai = *newPage;
+    }
+    page->filhos[page->nChaves] = NULL;
 
-
-    //Atualiza as variáveis com as novas quantidades de chaves
-    (*newPage)->nChaves = page->nChaves - mediana;
-    page->nChaves = mediana;
+    //Atualiza as variáveis com as novas quantidades de chaves.
+    (*newPage)->nChaves = mediana;
+    page->nChaves -= mediana;
 
     //Procura onde deverá inserir o novo registro
-    if(pos <= page->chaves-1)
+    if(pos <= page->nChaves-1)
         //Página atual
         inserePagina(page, filho, valor, pos);
     else
@@ -193,10 +193,10 @@ int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **new
         inserePagina(*newPage, filho, valor, pos - mediana);
 
     //Guardando a chave mediana na variável "pontReg" para uso posterior
-    (*pontReg).chave = page->chaves[page->nChaves]->chave;
-    (*pontReg).indice = page->chaves[page->nChaves]->indice;
-    (*newPage)->filhos[0] = page->filhos[page->nChaves];
+    (*pontReg).chave = page->chaves[page->nChaves-1]->chave;
+    (*pontReg).indice = page->chaves[page->nChaves-1]->indice;
     //Chave mediana removida da página analisada
     page->nChaves--;
+    page->chaves[page->nChaves] = NULL;
     return 1;
 }

@@ -56,6 +56,6 @@ int insereChave(arvore *arv, chave registro, chave *pontReg, pagina *page, pagin
 Descrição: Função para corrigir o balanceamento da árvore, realizando a subdivisão da página cheia em duas novas páginas
 Entrada: A chave desejada, um endereço para a variável que irá guardar a chave mediana, a página cheia, a página filho,
          um endereço para o novo filho, a posição que será inserida a chave desejada
-Saída:  Subdivisão da página realizada
+Saída: 1 - Sucesso, 0 - Casos de erro
 */
 int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **newPage, int pos);
