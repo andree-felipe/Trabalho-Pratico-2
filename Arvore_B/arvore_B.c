@@ -324,6 +324,57 @@ int inserePImpar(arvore *arv, pagina *page, int valor, int indice){
     return 1;
 }
 
+int removeChave(arvore *arv, int chave){
+    // Declaração de Variáveis
+    int indice;
+    pagina *pagina;
+
+    // Verificação da quantidade de elementos da Árvore.
+    if(arv->numElementos < 1){
+        printf("Erro ao remover o elemento '%d'.\nA árvore está vazia.\n", chave);
+        return 0;
+    } else {
+        pagina = buscaChave(arv->raiz, chave);
+
+        if(!pagina){
+            printf("Erro ao remover o elemento '%d'.\nA chave não está presente na árvore.\n");
+            return 0;
+        }
+
+        indice = buscaIdx(pagina, chave);
+
+        if(pagina->folha){
+            removeDeFolha(pagina, indice);
+        } else {
+            struct chave *antecessor = encontraAntecessor(pagina->filhos[indice]);
+            pagina->chaves[indice] = antecessor;
+            removeChave(arv, antecessor->chave);
+        }
+    arv->numElementos--;
+    return 1;
+    }
+
+}
+
+pagina* buscaPagina(pagina* pagina, int chave){
+    int i=0;
+
+    if(!pagina){
+        printf("A página, de endereço '%p', não existe.", pagina);
+        return -1;
+    } else {
+        while(i < pagina->nChaves && chave > pagina->chaves[i]){
+            i++;
+        }
+        if(i < pagina->nChaves && chave == pagina->chaves[i]){
+            return pagina;
+        } else if(pagina->folha){
+            return -1;
+        } else {
+            return buscaPagina(pagina->filhos[i], chave);
+        }
+    }
+}
 /*
 Descrição: Aloca uma nova estrutura de chave, e salva ela na lista de chaves da página.
 Entrada: Ponteiro para a página onde será inserido, inteiro da chave, inteiro da linha.
@@ -343,7 +394,7 @@ int insereFolha(pagina *page, int valor, int indice){
     page->chaves[pos + 1]->chave = valor;
     page->chaves[pos + 1]->indice = indice;
     page->nChaves+=1;
-
+}
 /*
 Descrição: Função que recebe uma página pai, e os indices das páginas filhas que serão divididas. A função olha qual dos filhos é nulo, e joga metade
     dos elementos da outra página para essa nula. Aqui tem 2 casos, se a página original é da esquerda, nós pegamos a metade direita e jogamos para a
