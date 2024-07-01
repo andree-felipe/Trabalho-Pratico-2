@@ -326,13 +326,13 @@ int removeChave(arvore *arv, int chave){
     // Verificação da quantidade de elementos da Árvore.
     if(arv->numElementos < 1){
         printf("Erro ao remover o elemento '%d'.\nA árvore está vazia.\n", chave);
-        return -1;
+        return 0;
     } else {
         pagina = buscaChave(arv->raiz, chave);
 
         if(!pagina){
             printf("Erro ao remover o elemento '%d'.\nA chave não está presente na árvore.\n");
-            return -1;
+            return 0;
         }
 
         indice = buscaIdx(pagina, chave);
@@ -345,7 +345,7 @@ int removeChave(arvore *arv, int chave){
             removeChave(arv, antecessor->chave);
         }
     arv->numElementos--;
-    return 0;
+    return 1;
     }
 
 }

@@ -30,7 +30,7 @@ Descrição: Função auxiliar para buscar o índice de uma página.
 Entrada: Ponteiro para página e a chave a ser buscada.
 Saída: Índice para a chave procurada.
 */
-int buscaChave(pagina *pagina, int chave);
+pagina *buscaChave(pagina *pagina, int chave);
 
 /*
 Descrição: Função auxiliar para buscar a posição de um elemento na página.
@@ -94,6 +94,13 @@ Entrada: Ponteiro para a árvore, ponteiro para a página onde o elemento origin
 Saída: 1 - Sucesso, 0 - Erro.
 */
 int inserePImpar(arvore *arv, pagina *pai, int valor, int indice);
+
+/*
+Descrição: Função que remove a chave especificada da ávore B.
+Entrada: Ponteiro para a árvore b, inteiro da chave.
+Saída: 1 - Sucesso, 0 - Erro.
+*/
+int removeChave(arvore *arv, int chave);
 
 /*
 Descrição: Função que recebe uma página pai, e os indices das páginas filhas que serão divididas. A função olha qual dos filhos é nulo, 
