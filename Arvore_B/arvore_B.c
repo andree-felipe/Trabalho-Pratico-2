@@ -340,9 +340,7 @@ int removeChave(arvore *arv, int chave){
         if(pagina->folha){
             removeDeFolha(pagina, indice);
         } else {
-            struct chave *antecessor = encontraAntecessor(pagina->filhos[indice]);
-            pagina->chaves[indice] = antecessor;
-            removeChave(arv, antecessor->chave);
+             removeDeNaoFolha(pagina, indice)
         }
     arv->numElementos--;
     return 1;
