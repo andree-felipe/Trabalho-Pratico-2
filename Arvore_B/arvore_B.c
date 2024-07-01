@@ -256,6 +256,8 @@ void imprimeArvore(pagina *raiz, int nivel){
             imprimeArvore(raiz->filhos[i], nivel + 1);
         }
     }
+}
+
 int buscaArvore(arvore *arv, int valorBusca) {
     pagina *pageAtual = arv->raiz;
     int indice = -1;
