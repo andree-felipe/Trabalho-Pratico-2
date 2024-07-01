@@ -35,11 +35,17 @@ Entrada: Ponteiro para a raiz da árvore, registro a ser inserido.
 Saída: 1 - Sucesso, 0 - Casos de erro.
 */
 int insere(arvore *arv, chave valor);
+/*
+Descrição: Retorna a quantidade de elementos da árvore.
+Entrada: Ponteiro para a árvore b.
+Saída: Inteiro da quantidade de elementos da árvore.
+*/
+int getNumElementos(arvore *arv);
 
 /*
-Descrição:
-Entrada:
-Saída: 
+Descrição: Retorna a ordem da árvore.
+Entrada: Ponteiro para a árvore b.
+Saída: Inteiro da ordem.
 */
 int inserePagina(pagina *page, pagina *filho, chave valor, int pos);
 

@@ -1,5 +1,6 @@
 #include "arvore_B.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 /*** -- Estruturas -- ***/
 
@@ -39,12 +40,15 @@ pagina *getRaiz(arvore *arv){
     return arv->raiz;
 }
 
-/*
-Descrição: Cria uma estrutura de página para a raiz.
-Entrada: Ponteiro para a árvore b, estrutura com os valores iniciais, ponteiro para uma página filha.
-Saída: Ponteiro para a página; NULL em caso de erro.
-*/
-pagina *criaRaiz(arvore *arv, chave valor, pagina *filho){
+int getNumElementos(arvore *arv){
+    return arv->numElementos;
+}
+
+int getOrdem(arvore *arv){
+    return arv->ordem;
+}
+
+pagina *criaRaiz(arvore *arv, chave *valor, pagina *filho){
     //Criando a raiz.
     pagina *raiz = (pagina*)malloc(sizeof(pagina));
     if(!raiz){
@@ -75,19 +79,16 @@ pagina *criaRaiz(arvore *arv, chave valor, pagina *filho){
         raiz->folha = 1;
     }
     raiz->pai = NULL;
-    //Creio que não precisa criar espaço para essa chave.
-    raiz->chaves[0] = (chave*)malloc(sizeof(chave));
-    if(!raiz->chaves[0]){
-        free(raiz->filhos);
-        free(raiz->chaves);
-        free(raiz);
-        return NULL;
-    }
-    raiz->chaves[0]->chave = valor.chave;
-    raiz->chaves[0]->indice = valor.indice;
+    raiz->chaves[0] = valor;
     raiz->nChaves = 1;
     raiz->filhos[0] = arv->raiz;
+    if(raiz->filhos[0]){
+        raiz->filhos[0]->pai = raiz;
+    }
     raiz->filhos[1] = filho;
+    if(raiz->filhos[1]){
+        raiz->filhos[1]->pai = raiz;
+    }
     //Setando o resto como nulo.
     raiz->chaves[1] = NULL;
     for(int i = 2; i < arv->ordem-1; i++){
@@ -101,47 +102,86 @@ pagina *criaRaiz(arvore *arv, chave valor, pagina *filho){
     return raiz;
 }
 
-int insere(arvore *arv, chave valor) {
-    int cond;
-    chave reg;
-    pagina *filho;
+pagina *criaPagina(int quantidade){
+    //Criando página.
+    pagina *newPage = (pagina*)malloc(sizeof(pagina));
+    if(!newPage){
+        return NULL;
+    }
+    //Alocando espaço para seus ponteiros de ponteiros.
+    newPage->chaves = (chave**)malloc(sizeof(chave*) * (quantidade));
+    if(!newPage->chaves){
+        free(newPage);
+        return NULL;
+    }
+    newPage->filhos = (pagina**)malloc(sizeof(pagina*) * (quantidade + 1));
+    if(!newPage->filhos){
+        free(newPage->chaves);
+        free(newPage);
+        return NULL;
+    }
+    //Inicializando tudo como nulo.
+    for(int i = 0; i < quantidade; i++){
+        newPage->chaves[i] = NULL;
+        newPage->filhos[i] = NULL;
+    }
+    newPage->filhos[quantidade] = NULL;
+    return newPage;
+}
 
-    cond = insereChave(arv, valor, &reg, arv->raiz, &filho);
+int insere(arvore *arv, int matricula, int indice) {
+    int cond; //Verifica se a árvore está cheia, e necessita de uma nova raiz.
+    chave *registro = (chave*)malloc(sizeof(chave)); //Aloca um novo bloco para o registro.
+    chave **inserida = NULL; //Essa função aponta para o registro que será inserido.
+    pagina *filho; //Representa o filho da página atual, é setado na insereChave.
+    if(!registro){
+        return 0;
+    }
+    //Salvando os dados no registro.
+    registro->chave = matricula;
+    registro->indice = indice;
+    //Chamando a função responsável por identificar o que fazer com o novo elemento.
+    cond = insereChave(arv, inserida, registro, arv->raiz, &filho);
     if(cond) { //Significa que a árvore está cheia
         //Cria uma nova raiz
-        arv->raiz = criaRaiz(arv, valor, filho);
+        arv->raiz = criaRaiz(arv, *inserida, filho);
         if(!arv->raiz)
             return 0;
     }
     return 1;
 }
 
-/*
-Descrição:
-Entrada:
-Saída: 
-*/
-int inserePagina(pagina *page, pagina *filho, chave valor, int pos) {
-    return 1;
+void inserePagina(pagina *page, pagina *filho, chave *registro, int pos){
+    for(int i = page->nChaves; i != pos; i--){
+        page->chaves[i] = page->chaves[i - 1];
+        page->filhos[i+1] = page->filhos[i];
+    }
+    page->chaves[pos] = registro;
+    page->filhos[pos + 1] = filho;
+    if(page->filhos[pos + 1]){
+        //Utilizado quando o split é em um nó intermediário, pois esse filho está vinculado com o nó original (antes do split).
+        page->filhos[pos + 1]->pai = page;
+    }
+    page->nChaves++;
 }
 
-int insereChave(arvore *arv, chave registro, chave *pontReg, pagina *page, pagina **filho) {
+int insereChave(arvore *arv, chave **inserida, chave *registro, pagina *page, pagina **filho){
     int pos; //Representa o filho na qual a chave entra.
     if(!page){
         //Se a página for nula, chegamos a uma folha.
+        *inserida = registro; //Fazendo o ponteiro de ponteiro apontar para o registro inicial.
         *filho = NULL; //Setando como nulo, pois não tem filho.
-        *pontReg = registro; //Salvando o próprio registro.
         return 1;
     }
-    //Procurando em qual filho entra a chave.
-    for(pos = 0; pos < page->nChaves && registro.chave > page->chaves[pos]->chave; pos++);
+    //Procurando em qual filho/posição entra a chave.
+    for(pos = 0; pos < page->nChaves && registro->chave > page->chaves[pos]->chave; pos++);
     //Se a recursiva desse função, com o filho[pos], for 0 a execução acaba, se for 1 insere ou da split.
-    if(insereChave(arv, registro, pontReg, page->filhos[pos], filho)){
+    if(insereChave(arv, inserida, registro, page->filhos[pos], filho)){
         //Se tem espaço na página, insere o registro, se não tem espaço da split.
         if(page->nChaves < arv->ordem - 1){
-            inserePagina(page, *filho, registro, pos);
+            inserePagina(page, *filho, *inserida, pos);
         }else{
-            if(split(registro, pontReg, page, *filho, filho, pos)){
+            if(split(inserida, *inserida, page, *filho, filho, pos)){
                 return 1;
             }
         }
@@ -149,20 +189,15 @@ int insereChave(arvore *arv, chave registro, chave *pontReg, pagina *page, pagin
     return 0;
 }
 
-int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **newPage, int pos) {
+int split(chave **inserida, chave *registro, pagina *page, pagina *filho, pagina **newPage, int pos) {
     int mediana=page->nChaves / 2; //Número de chaves sempre vai ser ímpar, logo a metade é o inteiro resultante da divisão por 2.
-
     //Cria a nova página para realizar a divisão dos elementos, e cria espaço para seus ponteiros de ponteiros.
-    *newPage = (pagina*)malloc(sizeof(pagina));
-    if(!*newPage)
+    *newPage = criaPagina(page->nChaves);
+    if(!*newPage){
         return 0;
-    (*newPage)->chaves = (chave**)malloc(page->nChaves * sizeof(chave*));
-    if(!((*newPage)->chaves))
-        return 0;
-    (*newPage)->filhos = (pagina**)malloc((page->nChaves + 1) * sizeof(pagina*));
-    if(!((*newPage)->filhos))
-        return 0;
-    //O certo seria deixar eles nulos, podemos criar uma função para criar essa página também.
+    }
+    (*newPage)->folha = page->folha;
+    (*newPage)->pai = page->pai;
 
     //Insere os elementos da parte direita da página cheia na nova página.
     for(int i=mediana+1; i<page->nChaves;i++) {
@@ -187,16 +222,31 @@ int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **new
     //Procura onde deverá inserir o novo registro
     if(pos <= page->nChaves-1)
         //Página atual
-        inserePagina(page, filho, valor, pos);
+        inserePagina(page, filho, registro, pos);
     else
         //Nova página criada
-        inserePagina(*newPage, filho, valor, pos - mediana);
+        inserePagina(*newPage, filho, registro, pos - mediana - 1);
 
-    //Guardando a chave mediana na variável "pontReg" para uso posterior
-    (*pontReg).chave = page->chaves[page->nChaves-1]->chave;
-    (*pontReg).indice = page->chaves[page->nChaves-1]->indice;
-    //Chave mediana removida da página analisada
+    //A chave que vai subir para o pai é a chave na posição da mediana na página analisada, aqui fazemos o nosso ponteiro de ponteiro apontar
+    // para essa chave.
+    *inserida = page->chaves[page->nChaves-1];
+    //Chave mediana removida da página analisada.
     page->nChaves--;
     page->chaves[page->nChaves] = NULL;
     return 1;
+}
+
+void imprimeArvore(pagina *raiz, int nivel){
+    if(raiz){
+        printf("\n%d - %d - ", nivel, raiz->nChaves);
+        for(int i = 0; i < raiz->nChaves; i++){
+            printf("%d ", raiz->chaves[i]->chave);
+        }
+        if(raiz->pai){
+            printf("- %d", raiz->pai->chaves[0]->chave);
+        }
+        for(int i = 0; i <= raiz->nChaves; i++){
+            imprimeArvore(raiz->filhos[i], nivel + 1);
+        }
+    }
 }
