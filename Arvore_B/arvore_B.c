@@ -42,8 +42,8 @@ void merge(pagina *page, arvore *arv, int idx){
 }
 
 // Função recursiva para buscar a chave na árvore B
-pagina *buscaChave(struct pagina *page, int chave) {
-    int i = buscaIdx(page, chave);
+pagina *buscaChave(pagina *page, int chave) {
+    int i = buscaPos(page, chave);
     // Se a chave é encontrada nesta página, retorna a página
     if (i < page->nChaves && page->chaves[i]->chave == chave) {
         return page;
@@ -321,15 +321,31 @@ int inserePImpar(arvore *arv, pagina *page, int valor, int indice){
 int removeChave(arvore *arv, int chave){
     // Declaração de Variáveis
     int indice;
+    pagina *pagina;
 
     // Verificação da quantidade de elementos da Árvore.
     if(arv->numElementos < 1){
         printf("Erro ao remover o elemento '%d'.\nA árvore está vazia.\n", chave);
         return -1;
     } else {
-        indice = buscaChave();
-        if{
+        pagina = buscaChave(arv->raiz, chave);
+
+        if(!pagina){
+            printf("Erro ao remover o elemento '%d'.\nA chave não está presente na árvore.\n");
+            return -1;
         }
+
+        indice = buscaIdx(pagina, chave);
+
+        if(pagina->folha){
+            removeDeFolha(pagina, indice);
+        } else {
+            struct chave *antecessor = encontraAntecessor(pagina->filhos[indice]);
+            pagina->chaves[indice] = antecessor;
+            removeChave(arv, antecessor->chave);
+        }
+    arv->numElementos--;
+    return 0;
     }
 
 }
@@ -439,41 +455,4 @@ int divideIrmao(arvore *arv, pagina *pai, int irmaoEsq, int irmaoDir){
         }
     }
     return 1;
-}
-
-int removeChave(arvore *arv, int chave){
-    // Declaração de Variáveis
-    int indice;
-
-    // Verificação da quantidade de elementos da Árvore.
-    if(arv->numElementos < 1){
-        printf("Erro ao remover o elemento '%d'.\nA árvore está vazia.\n", chave);
-        return -1;
-    } else {
-        indice = buscaChave()
-        if{
-
-        }
-    }
-
-}
-
-pagina* buscaPagina(pagina* pagina, int chave){
-    int i=0;
-
-    if(!pagina){
-        printf("A página, de endereço '%p', não existe.", pagina);
-        return -1;
-    } else {
-        while(i < pagina->nChaves && chave > pagina->chaves[i]){
-            i++;
-        }
-        if(i < pagina->nChaves && chave == pagina->chaves[i]){
-            return pagina;
-        } else if(pagina->folha){
-            return -1;
-        } else {
-            return buscaPagina(pagina->filhos[i], chave);
-        }
-    }
 }
