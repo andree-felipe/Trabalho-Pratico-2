@@ -23,6 +23,13 @@ struct arvore{
     int ordem;
 };
 
+struct registro{
+    int matricula;
+    unsigned long long cpf;
+    char dataNasc[11];
+    char nome[6];
+};
+
 /*** -- Funções -- ***/
 
 arvore *criaArvore(int ordem){
@@ -249,4 +256,73 @@ void imprimeArvore(pagina *raiz, int nivel){
             imprimeArvore(raiz->filhos[i], nivel + 1);
         }
     }
+int buscaArvore(arvore *arv, int valorBusca) {
+    pagina *pageAtual = arv->raiz;
+    int indice = -1;
+    
+    //Enquanto o pageAtual não chegar na folha, continue procurando.
+    while(!pageAtual->folha){
+        pagina *pageAux = pageAtual; //Salvando o pai.
+        //Verificando em qual filho entrar.
+        for(int i = 0; i < pageAux->nChaves && indice == -1; i++){
+            if(valorBusca == pageAux->chaves[i]->chave) {
+                indice = pageAux->chaves[i]->indice;
+            }
+            else {
+                if(valorBusca < pageAux->chaves[i]->chave){
+                    pageAtual = pageAux->filhos[i];
+                }else if(i == pageAux->nChaves - 1){
+                    pageAtual = pageAux->filhos[i+1];
+                }
+            }
+        }
+    }
+
+    // Percorrendo a folha, caso o valor não tenha sido encontrado
+    if(indice = -1) {
+        for(int i = 0; i < pageAtual->nChaves && indice == -1; i++) {
+            if(valorBusca == pageAtual->chaves[i]->chave) {
+                indice = pageAtual->chaves[i]->indice;
+            }
+        }
+    }
+
+    return indice;
+}
+
+int buscaArquivoIndice(char nomeArquivo, int indice, registro *dadosColetados) {
+    int tamanhoLinha = sizeof(int) * 3 + sizeof(char[6]) + sizeof(" ") * 3 + sizeof("\n");
+    long int posicaoByte;
+
+    FILE *arq = fopen(nomeArquivo, "r");
+
+    // Não foi possível abrir o arquivo
+    if(!arq) {
+        return 0;
+    }
+    else {
+        posicaoByte = indice * tamanhoLinha;
+        fseek(arq, posicaoByte, SEEK_SET);
+        fscanf(arq, "%d %s %s %llu", &dadosColetados->matricula, &dadosColetados->nome, &dadosColetados->dataNasc, &dadosColetados->nome);
+        printf("Nome: %s | Matricula: %d | Data de Nascimento: %s | CPF: %llu", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
+    }
+
+    fclose(arq);
+}
+
+int buscaArquivoDireto(char nomeArquivo, int matriculaParametro, registro *dadosColetados) {
+    FILE *arq = fopen(nomeArquivo, "r");
+    
+    if(!arq) {
+        return 0;
+    }
+    else {
+        while(fscanf(arq, "%d %s %s %llu", &dadosColetados->matricula, &dadosColetados->nome, &dadosColetados->dataNasc, &dadosColetados->nome) != EOF) {
+            if(dadosColetados->matricula == matriculaParametro) {
+                printf("Nome: %s | Matricula: %d | Data de Nascimento: %s | CPF: %llu", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
+            }
+        }
+    }
+
+    fclose(arq);
 }

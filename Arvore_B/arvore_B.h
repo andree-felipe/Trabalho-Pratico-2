@@ -6,6 +6,8 @@ typedef struct chave chave;
 
 typedef struct arvore arvore;
 
+typedef struct registro registro;
+
 /*** -- Funções -- ***/
 
 /*
@@ -65,3 +67,23 @@ Entrada: A chave desejada, um endereço para a variável que irá guardar a chav
 Saída: 1 - Sucesso, 0 - Casos de erro
 */
 int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **newPage, int pos);
+/* 
+Descrição: Busca de um chave na árvore para coleta do índice para busca posterior no arquivo
+Entrada: Ponteiro para a árvore, valor inteiro de busca
+Saída: -1 - não há chave com o valor buscado, índice da chave buscada
+*/
+int buscaArvore(arvore *arv, int valorBusca);
+
+/* 
+Entrada: Nome do arquivo, índice de busca
+Descrição: Busca no arquivo a partir do índice encontrado na árvore
+Saída: 1 - Sucesso, 0 - Falha
+*/
+int buscaArquivoIndice(char nomeArquivo, int indice, registro *dadosColetados);
+
+/* 
+Entrada: 
+Descrição: busca de informações diretamente no arquivo
+Saída: 0 - Falha
+*/
+int buscaArquivoDireto(char nomeArquivo, int matriculaParametro, registro *dadosColetados);
