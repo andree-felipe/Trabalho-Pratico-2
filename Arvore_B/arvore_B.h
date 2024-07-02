@@ -10,18 +10,6 @@ typedef struct registro registro;
 
 /*** -- Funções -- ***/
 
-/*
-Descrição: Cria uma estrutura da árvore b.
-Entrada: Inteiro da ordem da árvore.
-Saída: Ponteiro para a árvore; NULL em caso de erro.
-*/
-arvore *criaArvore(int ordem);
-
-/*
-Descrição: Retorna a raiz da árvore.
-Entrada: Ponteiro para a árvore b.
-Saída: Ponteiro para a raiz da árvore.
-*/
 pagina *getRaiz(arvore *arv);
 
 /*
@@ -67,6 +55,56 @@ Entrada: A chave desejada, um endereço para a variável que irá guardar a chav
 Saída: 1 - Sucesso, 0 - Casos de erro
 */
 int split(chave valor, chave *pontReg, pagina *page, pagina *filho, pagina **newPage, int pos);
+
+/*
+Descrição: Função para reorganizar a árvore por merge dos irmãos.
+Entrada: Ponteiro para página, ponteiro para árvore e 
+Saída: Ponteiro para a maior chave da subárvore esquerda.
+*/
+void merge(pagina *page, arvore *arv, int pos);
+
+/*
+Descrição: Função para encontrar a maior chave na subárvore esquerda.
+Entrada: Ponteiro para página
+Saída: Ponteiro para a maior chave da subárvore esquerda.
+*/
+chave *encontraAntecessor(pagina *pagina);
+
+/*
+Descrição: Função auxiliar para buscar o índice de uma página.
+Entrada: Ponteiro para página e a chave a ser buscada.
+Saída: Índice para a chave procurada.
+*/
+pagina *buscaChave(pagina *pagina, int chave);
+
+/*
+Descrição: Função auxiliar para buscar a posição de um elemento na página.
+Entrada: Ponteiro para página e a chave a ser buscada.
+Saída: Posição para a chave procurada.
+*/
+int buscaPos(pagina *pagina, int chave);
+
+/*
+Descrição: Função para remover chave de folha.
+Entrada: Ponteiro para página e a chave a ser removida.
+Saída: Void.
+*/
+void removeDeFolha(pagina *page, int indice);
+
+/*
+Descrição: Função para remover chave de não folha.
+Entrada: Ponteiro para página e a chave a ser removida.
+Saída: Void.
+*/
+void removeDeNaoFolha(pagina *page, int i);
+
+/*
+Descrição: Função que remove a chave especificada da ávore B.
+Entrada: Ponteiro para a árvore b, inteiro da chave.
+Saída: 1 - Sucesso, 0 - Erro.
+*/
+int removeChave(arvore *arv, int chave);
+
 /* 
 Descrição: Busca de um chave na árvore para coleta do índice para busca posterior no arquivo
 Entrada: Ponteiro para a árvore, valor inteiro de busca
