@@ -1,15 +1,10 @@
-#ifndef INC_13_TRABALHO2_ARVORE_B_H
-#define INC_13_TRABALHO2_ARVORE_B_H
-
 /*** -- Estruturas -- ***/
-
-typedef struct pagina pagina;
 
 typedef struct chave chave;
 
-typedef struct arvore arvore;
+typedef struct pagina pagina;
 
-typedef struct registro registro;
+typedef struct arvore arvore;
 
 /*** -- Funções -- ***/
 
@@ -26,6 +21,8 @@ Entrada: Ponteiro para a árvore b.
 Saída: Ponteiro para a raiz da árvore.
 */
 pagina *getRaiz(arvore *arv);
+
+int getIndice(pagina *page, int pos);
 
 /*
 Descrição: Retorna a quantidade de elementos da árvore.
@@ -88,6 +85,8 @@ Saída: 1 - Sucesso, 0 - Casos de erro
 */
 int split(chave **inserida, chave *registro, pagina *page, pagina *filho, pagina **newPage, int pos);
 
+int buscaChave(pagina *raiz, int mat);
+
 /*
 Descrição: Função que imprime a árvore da seguinte maneira: nível - número de chaves - chaves - pai (se tiver). A função é chamada recursivamente
     imprimindo as sub-árvores da esquerda para a direita.
@@ -96,4 +95,4 @@ Saída: Nada.
 */
 void imprimeArvore(pagina *raiz, int nivel);
 
-#endif //INC_13_TRABALHO2_ARVORE_B_H
+int processaEntrada(arvore *arv, char *nomeArquivo);

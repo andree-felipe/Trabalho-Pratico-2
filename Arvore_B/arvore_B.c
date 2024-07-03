@@ -23,13 +23,6 @@ struct arvore{
     int ordem;
 };
 
-struct registro{
-    int matricula;
-    unsigned long long cpf;
-    char dataNasc[11];
-    char nome[6];
-};
-
 /*** -- Funções -- ***/
 
 /*
@@ -55,6 +48,10 @@ Saída: Ponteiro para a raiz da árvore.
 */
 pagina *getRaiz(arvore *arv){
     return arv->raiz;
+}
+
+int getIndice(pagina *page, int pos){
+    return page->chaves[pos]->indice;
 }
 
 /*
@@ -299,6 +296,28 @@ int split(chave **inserida, chave *registro, pagina *page, pagina *filho, pagina
     return 1;
 }
 
+int buscaChave(pagina *raiz, int mat){
+    pagina *aux, *atual = raiz;
+    int pos = -1;
+    while(atual){
+        aux = atual;
+        for(int i = 0; atual && i < atual->nChaves && aux == atual; i++){
+            if(mat < atual->chaves[i]->chave){
+                atual = atual->filhos[i];
+            }else if(mat == atual->chaves[i]->chave){
+                pos = i;
+                atual = NULL;
+            }else if(i == atual->nChaves - 1){
+                atual = atual->filhos[i+1];
+            }
+        }
+        if(pos != -1){
+            return aux->chaves[pos]->indice;
+        }
+    }
+    return -1;
+}
+
 /*
 Descrição: Função que imprime a árvore da seguinte maneira: nível - número de chaves - chaves - pai (se tiver). A função é chamada recursivamente
     imprimindo as sub-árvores da esquerda para a direita.
@@ -318,4 +337,23 @@ void imprimeArvore(pagina *raiz, int nivel){
             imprimeArvore(raiz->filhos[i], nivel + 1);
         }
     }
+}
+
+int processaEntrada(arvore *arv, char *nomeArquivo) {
+    int mat, i = 0;
+    char nome[6], dataNasc[11];
+    long int cpf;
+    FILE *file;
+    file = fopen(nomeArquivo, "r");
+    if(!file)
+        return 0;
+
+    while(!feof(file)) {
+        fscanf(file, "%d %s %s %ld", &mat, nome, dataNasc, &cpf);
+        insere(arv, mat, i);
+        i++;
+    }
+
+    fclose(file);
+    return 1;
 }
