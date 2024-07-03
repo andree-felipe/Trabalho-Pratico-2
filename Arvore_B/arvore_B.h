@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 /*** -- Estruturas -- ***/
 
 typedef struct chave chave;

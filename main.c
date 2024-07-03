@@ -46,7 +46,7 @@ int main(void) {
     registro reg;
     metricas btree, direto;
     clock_t inicio, fim;
-    int resp, indice, mat, qtdPesquisa=30;
+    int resp, indice, mat, qtdPesquisa=10000;
     double tempo;
     char nomeArquivoResultados[20], nomeArquivo[20] = "entrada.txt";
 
