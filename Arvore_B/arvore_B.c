@@ -79,11 +79,7 @@ pagina *criaRaiz(arvore *arv, chave *valor, pagina *filho){
         return NULL;
     }
     //Criando espaço para as chaves e os filhos.
-    if(arv->ordem % 2 == 0){
-        raiz->chaves = (chave**)malloc(sizeof(chave*) * (arv->ordem - 1));
-    }else{
-        raiz->chaves = (chave**)malloc(sizeof(chave*) * (arv->ordem));
-    }
+    raiz->chaves = (chave**)malloc(sizeof(chave*) * (arv->ordem - 1));
     if(!raiz->chaves){
         free(raiz);
         return NULL;
@@ -291,18 +287,27 @@ int split(chave **inserida, chave *registro, pagina *page, pagina *filho, pagina
     return 1;
 }
 
+/*
+Descrição: Função que busca em qual página está a matrícula informada, se ela encontrar salva a posição da chave.
+Entrada: Ponteiro para a raiz, inteiro da matrícula.
+Saída: -1 - Elemento não encontrada, caso contrário é o índice do elemento no arquivo.
+*/
 int buscaChave(pagina *raiz, int mat){
     pagina *aux, *atual = raiz;
     int pos = -1;
+    //Iniciando a busca pela página.
     while(atual){
         aux = atual;
         for(int i = 0; atual && i < atual->nChaves && aux == atual; i++){
             if(mat < atual->chaves[i]->chave){
+                //Elemento está no filho esquerdo da chave.
                 atual = atual->filhos[i];
             }else if(mat == atual->chaves[i]->chave){
+                //Elemento encontrado, encerrando o loop e salvando a posição.
                 pos = i;
                 atual = NULL;
             }else if(i == atual->nChaves - 1){
+                //Elemento está no filho mais a direita.
                 atual = atual->filhos[i+1];
             }
         }
@@ -313,6 +318,12 @@ int buscaChave(pagina *raiz, int mat){
     return -1;
 }
 
+/*
+Descrição: Função que imprime a árvore da seguinte maneira: nível - número de chaves - chaves - pai (se tiver). A função é chamada recursivamente
+    imprimindo as sub-árvores da esquerda para a direita.
+Entrada: Ponteiro para a página (raiz inicialmente), inteiro do nível (0 inicialmente).
+Saída: Nada.
+*/
 void imprimeArvore(pagina *raiz, int nivel){
     if(raiz){
         printf("\n%d - %d - ", nivel, raiz->nChaves);
@@ -328,6 +339,11 @@ void imprimeArvore(pagina *raiz, int nivel){
     }
 }
 
+/*
+Descrição: Função que irá ler o arquivo de entrada e com base neles, gerar a árvore b.
+Entrada: Ponteiro para a árvore b, ponteiro para o arquivo.
+Saída: 1 - Sucesso, 0 - Erro.
+*/
 int processaEntrada(arvore *arv, FILE *arq){
     int indice = 0, mat;
     long int cpf;
