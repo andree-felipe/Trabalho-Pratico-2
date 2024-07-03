@@ -1,6 +1,5 @@
 #include "arvore_B.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 /*** -- Estruturas -- ***/
 
@@ -318,12 +317,6 @@ int buscaChave(pagina *raiz, int mat){
     return -1;
 }
 
-/*
-Descrição: Função que imprime a árvore da seguinte maneira: nível - número de chaves - chaves - pai (se tiver). A função é chamada recursivamente
-    imprimindo as sub-árvores da esquerda para a direita.
-Entrada: Ponteiro para a página (raiz inicialmente), inteiro do nível (0 inicialmente).
-Saída: Nada.
-*/
 void imprimeArvore(pagina *raiz, int nivel){
     if(raiz){
         printf("\n%d - %d - ", nivel, raiz->nChaves);
@@ -339,21 +332,15 @@ void imprimeArvore(pagina *raiz, int nivel){
     }
 }
 
-int processaEntrada(arvore *arv, char *nomeArquivo) {
-    int mat, i = 0;
-    char nome[6], dataNasc[11];
+int processaEntrada(arvore *arv, FILE *arq){
+    int indice = 0, mat;
     long int cpf;
-    FILE *file;
-    file = fopen(nomeArquivo, "r");
-    if(!file)
-        return 0;
-
-    while(!feof(file)) {
-        fscanf(file, "%d %s %s %ld", &mat, nome, dataNasc, &cpf);
-        insere(arv, mat, i);
-        i++;
+    char nome[6], data[11];
+    while(!feof(arq)){
+        fscanf(arq, "%d %s %s %ld", &mat, nome, data, &cpf);
+        if(!insere(arv, mat, indice++)){
+            return 0;
+        }
     }
-
-    fclose(file);
     return 1;
 }
