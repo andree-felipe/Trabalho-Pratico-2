@@ -1,47 +1,111 @@
 #include <stdio.h>
 #include <string.h>
-#include "arvore_B.h"
+#include <stdlib.h>
+#include "Arvore_B/arvore_B.h"
+#include <time.h>
 
-struct dado{
-    int matricula;
-    int idade;
-    int cpf;
+typedef struct registro{
+    int mat;
+    long int cpf;
     char nome[6];
-};
+    char data[11];
+}registro;
+
+typedef struct metricas{
+    double tMin, tMax;
+}metricas;
+
+void buscaArquivoIndice(int indice, FILE *arq) {
+    signed long tamanhoLinha = sizeof(char[34]);
+    registro reg;
+    fseek(arq, tamanhoLinha * indice, SEEK_SET);
+    fscanf(arq, "%d %s %s %ld", &reg.mat, &reg.nome, &reg.data, &reg.cpf);
+    printf("\nNome: %s | Matricula: %d | Data de Nascimento: %s | CPF: %ld\n", reg.nome, reg.mat, reg.data, reg.cpf);
+}
+
+void buscaArquivoDireto(int mat, FILE *arq) {
+    registro reg;
+    rewind(arq);
+    reg.mat = -1;
+    while(!feof(arq) && reg.mat != mat) {
+        fscanf(arq, "%d %s %s %ld", &reg.mat, reg.nome, reg.data, &reg.cpf);
+        if(reg.mat == mat) {
+            printf("Nome: %s | Matricula: %d | Data de Nascimento: %s | CPF: %ld\n", reg.nome, reg.mat, reg.data, reg.cpf);
+        }
+    }
+}
 
 int main(void) {
-    FILE *arq = fopen("C:\\Users\\Usuario\\Documents\\01 - Universidade\\3 - Periodo\\CTCO02 - Algoritimo e Estruturas de Dados II\\13_Trabalho2\\dataset.txt", "r");
-    struct dado d;
+    FILE *arq = fopen("C:\\Users\\Usuario\\Documents\\01 - Universidade\\3 - Periodo\\CTCO02 - Algoritimo e Estruturas de Dados II\\13_Trabalho2\\entrada.txt", "r");
+    metricas btree, direto;
     arvore *arv;
-    int resp;
+    int resp, indice, mat;
+    clock_t inicio, fim;
+    double tempo;
 
-    if(!arq){
-        return 1;
-    }
-    printf("\nQual será a ordem da árvore?\nResposta: ");
-    scanf("%d", &resp);
-
-    arv = criaArvore(resp);
-    if(!arv){
-        return 1;
-    }
-
+    arv = criaArvore(4);
     do{
-        printf("\nMenu\n1. Criar índice\n2. Procurar elementos\n3. Remover registro\n4. Sair\n\nEscolha uma opção: ");
+        printf("\nMENU");
+        printf("\n1. Criar índice");
+        printf("\n2. Procurar elementos");
+        printf("\n4. Sair");
+        printf("\nResposta: ");
         scanf("%d", &resp);
-        switch (resp){
+
+        switch(resp){
             case 1:
-                //criarIndice();
+                if(!processaEntrada(arv, arq)){
+                    return 1;
+                }
                 break;
             case 2:
-                //pesquisa();
-                break;
-            case 3:
-                //removerRegistro();
+//                printf("\nInforme a matrícula que você deseja ler: ");
+//                scanf("%d", &mat);
+//                indice = buscaChave(getRaiz(arv), mat);
+//                if(indice == -1){
+//                    printf("\nElemento não encontrado.\n");
+//                }else {
+//                    buscaArquivoIndice(indice, arq);
+//                }
+                btree.tMin = btree.tMax = 0;
+                direto.tMin = direto.tMax = 0;
+                srand(time(NULL));
+                for(int i = 0; i < 30; i++){
+                    mat = rand() % 10000;
+                    inicio = clock();
+                    indice = buscaChave(getRaiz(arv), mat);
+                    buscaArquivoIndice(indice, arq);
+                    fim = clock();
+                    tempo = (double)(fim-inicio)/(CLOCKS_PER_SEC/1000);
+                    if(btree.tMin == 0 && btree.tMax == 0){
+                        btree.tMin = btree.tMax = tempo;
+                    }else if(tempo < btree.tMin){
+                        btree.tMin = tempo;
+                    }else if(tempo > btree.tMax){
+                        btree.tMax = tempo;
+                    }
+
+                    inicio = clock();
+                    buscaArquivoDireto(mat, arq);
+                    fim = clock();
+                    tempo = (double)(fim-inicio)/(CLOCKS_PER_SEC/1000);
+                    if(direto.tMin == 0 && direto.tMax == 0){
+                        direto.tMin = direto.tMax = tempo;
+                    }else if(tempo < direto.tMin){
+                        direto.tMin = tempo;
+                    }else if(tempo > direto.tMax){
+                        direto.tMax = tempo;
+                    }
+                }
+                printf("\n\nTempo mínimo B-Tree: %f", btree.tMin);
+                printf("\n\nTempo máximo B-Tree: %f", btree.tMax);
+                printf("\n\nTempo mínimo direto: %f", direto.tMin);
+                printf("\n\nTempo máximo direto: %f\n", direto.tMax);
                 break;
             default:
                 break;
         }
     }while(resp != 4);
+
     return 0;
 }
