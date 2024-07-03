@@ -23,15 +23,13 @@ struct arvore{
     int ordem;
 };
 
-struct registro{
-    int matricula;
-    unsigned long long cpf;
-    char dataNasc[11];
-    char nome[6];
-};
-
 /*** -- Funções -- ***/
 
+/*
+Descrição: Cria uma estrutura da árvore b.
+Entrada: Inteiro da ordem da árvore.
+Saída: Ponteiro para a árvore; NULL em caso de erro.
+*/
 arvore *criaArvore(int ordem){
     arvore *arv = (arvore*)malloc(sizeof(arvore));
     if(!arv){
@@ -43,18 +41,42 @@ arvore *criaArvore(int ordem){
     return arv;
 }
 
+/*
+Descrição: Retorna a raiz da árvore.
+Entrada: Ponteiro para a árvore b.
+Saída: Ponteiro para a raiz da árvore.
+*/
 pagina *getRaiz(arvore *arv){
     return arv->raiz;
 }
 
+int getIndice(pagina *page, int pos){
+    return page->chaves[pos]->indice;
+}
+
+/*
+Descrição: Retorna a quantidade de elementos da árvore.
+Entrada: Ponteiro para a árvore b.
+Saída: Inteiro da quantidade de elementos da árvore.
+*/
 int getNumElementos(arvore *arv){
     return arv->numElementos;
 }
 
+/*
+Descrição: Retorna a ordem da árvore.
+Entrada: Ponteiro para a árvore b.
+Saída: Inteiro da ordem.
+*/
 int getOrdem(arvore *arv){
     return arv->ordem;
 }
 
+/*
+Descrição: Cria uma estrutura de página para a raiz.
+Entrada: Ponteiro para a árvore b, estrutura com os valores iniciais, ponteiro para uma página filha.
+Saída: Ponteiro para a página; NULL em caso de erro.
+*/
 pagina *criaRaiz(arvore *arv, chave *valor, pagina *filho){
     //Criando a raiz.
     pagina *raiz = (pagina*)malloc(sizeof(pagina));
@@ -109,6 +131,11 @@ pagina *criaRaiz(arvore *arv, chave *valor, pagina *filho){
     return raiz;
 }
 
+/*
+Descrição: Função responsável por criar uma nova página para o split (por enquanto só aceita ordem par).
+Entrada: Quantidade de chaves (arv->ordem - 1).
+Saída: Ponteiro para a nova página;
+*/
 pagina *criaPagina(int quantidade){
     //Criando página.
     pagina *newPage = (pagina*)malloc(sizeof(pagina));
@@ -136,10 +163,17 @@ pagina *criaPagina(int quantidade){
     return newPage;
 }
 
+/*
+Descrição: Função de inserção de um elemento na árvore. Aloca um bloco para guardar o registro e passa o ponteiro dele para a insereChave,
+    também cria um ponteiro de ponteiro que sempre irá apontar para o novo bloco de registro que será incluído, dessa forma durante a split ele
+    começa a apontar para o bloco que subiu.
+Entrada: Ponteiro para a raiz da árvore, inteiro da matrícula (chave principal), inteiro do índice (linha no arquivo).
+Saída: 1 - Sucesso, 0 - Casos de erro.
+*/
 int insere(arvore *arv, int matricula, int indice) {
     int cond; //Verifica se a árvore está cheia, e necessita de uma nova raiz.
     chave *registro = (chave*)malloc(sizeof(chave)); //Aloca um novo bloco para o registro.
-    chave **inserida = NULL; //Essa função aponta para o registro que será inserido.
+    chave **inserida = &registro; //Essa função aponta para o registro que será inserido.
     pagina *filho; //Representa o filho da página atual, é setado na insereChave.
     if(!registro){
         return 0;
@@ -155,9 +189,15 @@ int insere(arvore *arv, int matricula, int indice) {
         if(!arv->raiz)
             return 0;
     }
+    arv->numElementos++;
     return 1;
 }
 
+/*
+Descrição: Função que insere um registro em uma página.
+Entrada: Ponteiro para a página, ponteiro para o filho do registro, ponteiro para o registro, inteiro da posição onde o registro entra.
+Saída: Nada.
+*/
 void inserePagina(pagina *page, pagina *filho, chave *registro, int pos){
     for(int i = page->nChaves; i != pos; i--){
         page->chaves[i] = page->chaves[i - 1];
@@ -172,6 +212,13 @@ void inserePagina(pagina *page, pagina *filho, chave *registro, int pos){
     page->nChaves++;
 }
 
+/*
+Descrição: Função que procura em qual filho vai o registro, se for folha significa que achou a posição dele na chave. E faz isso recursivamente,
+    decidindo se vai inserir, dar split, ou não fazer nada.
+Entrada: Ponteiro para a árvore b, ponteiro de ponteiro para o registro que será inserido (será alterado na split), ponteiro para o registro, ponteiro
+    para a página atual, ponteiro de ponteiro para o filho (usada para guardar a nova página da split na estrutura criada na insere).
+Saída: 1 - ou insere, ou da split, ou cria uma nova raiz (são tratados nas funções), 0 - Encerra a execução.
+*/
 int insereChave(arvore *arv, chave **inserida, chave *registro, pagina *page, pagina **filho){
     int pos; //Representa o filho na qual a chave entra.
     if(!page){
@@ -196,6 +243,12 @@ int insereChave(arvore *arv, chave **inserida, chave *registro, pagina *page, pa
     return 0;
 }
 
+/*
+Descrição: Função para corrigir o balanceamento da árvore, realizando a subdivisão da página cheia em duas novas páginas.
+Entrada: Ponteiro de ponteiro para o registro que será inserido, ponteiro para o registro, ponteiro para a página cheia, ponteiro para o filho,
+    ponteiro de ponteiros para a nova página (novo filho), inteiro da posição.
+Saída: 1 - Sucesso, 0 - Casos de erro
+*/
 int split(chave **inserida, chave *registro, pagina *page, pagina *filho, pagina **newPage, int pos) {
     int mediana=page->nChaves / 2; //Número de chaves sempre vai ser ímpar, logo a metade é o inteiro resultante da divisão por 2.
     //Cria a nova página para realizar a divisão dos elementos, e cria espaço para seus ponteiros de ponteiros.
@@ -243,180 +296,34 @@ int split(chave **inserida, chave *registro, pagina *page, pagina *filho, pagina
     return 1;
 }
 
-void merge(pagina *page, arvore *arv, int pos){
-    int i = 0, idx = pos;
-    if(idx == arv->ordem)
-        idx--;
-    pagina *filho = page->filhos[idx];
-    pagina *irmao = page->filhos[idx+1];
-    
-    irmao->chaves[irmao->nChaves] = page->chaves[pos];
-    irmao->nChaves++;
-    free(page->chaves[pos]);
-    page->pai->nChaves--;
-
-    while(filho->nChaves){
-        // Move as chaves do irmão para o outro (filho).
-        filho->chaves[filho->nChaves+i] = irmao->chaves[i];
-        // irmao->chaves[i] = NULL;
-        irmao->nChaves--;
-        i++;
-    }
-    free(irmao->chaves);
-
-    if(page->nChaves < arv->ordem/2)
-        merge(page->pai, arv, pos);
-}
-
-pagina *buscaChave(struct pagina *page, int chave) {
-    int i = buscaPos(page, chave);
-    // Se a chave é encontrada nesta página, retorna a página
-    if (i < page->nChaves && page->chaves[i]->chave == chave) {
-        return page;
-    }   
-    // Se a página é uma folha, a chave não está presente
-    if (page->folha) {
-        return NULL;
-    }    
-    // Se a página não é uma folha, busca recursivamente no filho apropriado
-    return buscar(page->filhos, chave);
-}
-
-chave *encontraAntecessor(pagina *pagina) {
-    while (!pagina->folha) {
-        pagina = pagina->filhos[pagina->nChaves];
-    }
-    return pagina->chaves[pagina->nChaves - 1];
-}
-
-
-int buscaPos(pagina *pagina, int chave) {
-    int pos = 0;
-    while (pos < pagina->nChaves && chave > pagina->chaves[pos]->chave) {
-        pos++;
-    }
-    return pos;
-}
-
-void removeDeFolha(pagina *page, int pos){
-    for(pos ; pos < page->nChaves ; pos++){
-        page->chaves[pos] = page->chaves[pos+1];
-    }
-    free(page->chaves[pos]);
-    page->nChaves--;
-    return;
-}
-
-void removeDeNaoFolha(pagina *page, int pos){
-    int chaves = page->chaves[pos]->chave;
-    page->chaves[pos] = encontraAntecessor(page);
-    removeDeFolha(buscaChave(page, page->chaves[pos]->chave), buscaPos(page, chaves));
-    return;
-}
-
-int removeChave(arvore *arv, int chave){
-    // Declaração de Variáveis
-    int indice;
-    pagina *pagina;
-
-    // Verificação da quantidade de elementos da Árvore.
-    if(arv->numElementos < 1){
-        printf("Erro ao remover o elemento '%d'.\nA árvore está vazia.\n", chave);
-        return 0;
-    } else {
-        pagina = buscaChave(arv->raiz, chave);
-
-        if(!pagina){
-            printf("Erro ao remover o elemento '%d'.\nA chave não está presente na árvore.\n");
-            return 0;
-        }
-
-        indice = buscaIdx(pagina, chave);
-
-        if(pagina->folha){
-            removeDeFolha(pagina, indice);
-        } else {
-            struct chave *antecessor = encontraAntecessor(pagina->filhos[indice]);
-            pagina->chaves[indice] = antecessor;
-            removeChave(arv, antecessor->chave);
-        }
-    arv->numElementos--;
-    return 1;
-    }
-
-}
-
-int buscaArvore(arvore *arv, int valorBusca) {
-    pagina *pageAtual = arv->raiz;
-    int indice = -1;
-    
-    //Enquanto o pageAtual não chegar na folha, continue procurando.
-    while(!pageAtual->folha){
-        pagina *pageAux = pageAtual; //Salvando o pai.
-        //Verificando em qual filho entrar.
-        for(int i = 0; i < pageAux->nChaves && indice == -1; i++){
-            if(valorBusca == pageAux->chaves[i]->chave) {
-                indice = pageAux->chaves[i]->indice;
-            }
-            else {
-                if(valorBusca < pageAux->chaves[i]->chave){
-                    pageAtual = pageAux->filhos[i];
-                }else if(i == pageAux->nChaves - 1){
-                    pageAtual = pageAux->filhos[i+1];
-                }
+int buscaChave(pagina *raiz, int mat){
+    pagina *aux, *atual = raiz;
+    int pos = -1;
+    while(atual){
+        aux = atual;
+        for(int i = 0; atual && i < atual->nChaves && aux == atual; i++){
+            if(mat < atual->chaves[i]->chave){
+                atual = atual->filhos[i];
+            }else if(mat == atual->chaves[i]->chave){
+                pos = i;
+                atual = NULL;
+            }else if(i == atual->nChaves - 1){
+                atual = atual->filhos[i+1];
             }
         }
-    }
-
-    // Percorrendo a folha, caso o valor não tenha sido encontrado
-    if(indice = -1) {
-        for(int i = 0; i < pageAtual->nChaves && indice == -1; i++) {
-            if(valorBusca == pageAtual->chaves[i]->chave) {
-                indice = pageAtual->chaves[i]->indice;
-            }
+        if(pos != -1){
+            return aux->chaves[pos]->indice;
         }
     }
-
-    return indice;
+    return -1;
 }
 
-int buscaArquivoIndice(char nomeArquivo, int indice, registro *dadosColetados) {
-    int tamanhoLinha = sizeof(int) * 3 + sizeof(char[6]) + sizeof(" ") * 3 + sizeof("\n");
-    long int posicaoByte;
-
-    FILE *arq = fopen(nomeArquivo, "r");
-
-    // Não foi possível abrir o arquivo
-    if(!arq) {
-        return 0;
-    }
-    else {
-        posicaoByte = indice * tamanhoLinha;
-        fseek(arq, posicaoByte, SEEK_SET);
-        fscanf(arq, "%d %s %s %llu", &dadosColetados->matricula, &dadosColetados->nome, &dadosColetados->dataNasc, &dadosColetados->nome);
-        printf("Nome: %s | Matricula: %d | Data de Nascimento: %s | CPF: %llu", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
-    }
-
-    fclose(arq);
-}
-
-int buscaArquivoDireto(char nomeArquivo, int matriculaParametro, registro *dadosColetados) {
-    FILE *arq = fopen(nomeArquivo, "r");
-    
-    if(!arq) {
-        return 0;
-    }
-    else {
-        while(fscanf(arq, "%d %s %s %llu", &dadosColetados->matricula, &dadosColetados->nome, &dadosColetados->dataNasc, &dadosColetados->nome) != EOF) {
-            if(dadosColetados->matricula == matriculaParametro) {
-                printf("Nome: %s | Matricula: %d | Data de Nascimento: %s | CPF: %llu", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
-            }
-        }
-    }
-
-    fclose(arq);
-}
-
+/*
+Descrição: Função que imprime a árvore da seguinte maneira: nível - número de chaves - chaves - pai (se tiver). A função é chamada recursivamente
+    imprimindo as sub-árvores da esquerda para a direita.
+Entrada: Ponteiro para a página (raiz inicialmente), inteiro do nível (0 inicialmente).
+Saída: Nada.
+*/
 void imprimeArvore(pagina *raiz, int nivel){
     if(raiz){
         printf("\n%d - %d - ", nivel, raiz->nChaves);
@@ -430,4 +337,23 @@ void imprimeArvore(pagina *raiz, int nivel){
             imprimeArvore(raiz->filhos[i], nivel + 1);
         }
     }
+}
+
+int processaEntrada(arvore *arv, char *nomeArquivo) {
+    int mat, i = 0;
+    char nome[6], dataNasc[11];
+    long int cpf;
+    FILE *file;
+    file = fopen(nomeArquivo, "r");
+    if(!file)
+        return 0;
+
+    while(!feof(file)) {
+        fscanf(file, "%d %s %s %ld", &mat, nome, dataNasc, &cpf);
+        insere(arv, mat, i);
+        i++;
+    }
+
+    fclose(file);
+    return 1;
 }

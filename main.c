@@ -1,40 +1,67 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "Arvore_B/arvore_B.h"
 #include "Entrada_Saida/ES.h"
 
-struct registro {
-    int mat;
-    unsigned long long cpf;
-    char *nome, *dataNasc;
-};
+typedef struct registro {
+    int matricula;
+    long int cpf;
+    char dataNasc[11];
+    char nome[6];
+}registro;
+
+int buscaArquivoIndice(char *nomeArquivo, int indice, registro *dadosColetados) {
+    signed long tamanhoLinha = sizeof(char[34]);
+    long int posicaoByte;
+
+    FILE *arq = fopen(nomeArquivo, "r");
+
+    // Não foi possível abrir o arquivo
+    if(!arq) {
+        return 0;
+    }
+    else {
+        fseek(arq, tamanhoLinha * indice, SEEK_SET);
+        fscanf(arq, "%d %s %s %ld", &dadosColetados->matricula, dadosColetados->nome, dadosColetados->dataNasc, &dadosColetados->cpf);
+        printf("Nome: %s | Matricula: %04d | Data de Nascimento: %s | CPF: %011ld\n", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
+    }
+
+    fclose(arq);
+}
+
+int buscaArquivoDireto(char *nomeArquivo, int matriculaParametro, registro *dadosColetados) {
+    FILE *arq = fopen(nomeArquivo, "r");
+    
+    if(!arq) {
+        return 0;
+    }
+    else {
+        while(fscanf(arq, "%d %s %s %ld", &dadosColetados->matricula, dadosColetados->nome, dadosColetados->dataNasc, &dadosColetados->cpf) != EOF) {
+            if(dadosColetados->matricula == matriculaParametro) {
+                printf("Nome: %s | Matricula: %04d | Data de Nascimento: %s | CPF: %011ld\n", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
+            }
+        }
+    }
+
+    fclose(arq);
+}
 
 int main(void) {
     FILE *arq;
     arvore *arv;
+    pagina *page;
     registro reg;
-    int resp;
-    char nomeArquivo[12] = "entrada.txt";
-    unsigned long long nroRegistros;
+    int resp, indice;
+    char nomeArquivo[20] = "entrada.txt";
 
-    printf("Já possui os arquivos de entrada?\n1 - Sim\n2 - Não\n0 - Sair\nOpção: ");
-    scanf(" %d", &resp);
-    if(resp == 2) {
-        printf("Quantidade de registros: ");
-        scanf(" %llu", &nroRegistros);
-        if(!criaEntrada(nomeArquivo, nroRegistros)) {
-            printf("Erro na criação do arquivo!");
-            return 1;
-        }
-    }
-    else if(resp == 0)
-        return 0;
-    
+    buscaArquivoDireto(nomeArquivo, 6, &reg);
 
-    printf("\nQual será a ordem da árvore?\nResposta: ");
-    scanf("%d", &resp);
+    //printf("\nQual será a ordem da árvore?\nResposta: ");
+    //scanf("%d", &resp);
 
-    arv = criaArvore(resp);
+    arv = criaArvore(4);
     if(!arv){
         printf("Erro na criação do arquivo de índice!");
         return 1;
@@ -45,13 +72,20 @@ int main(void) {
         scanf("%d", &resp);
         switch (resp){
             case 1:
-                if(!processaEntrada(nomeArquivo)) {
+                if(!processaEntrada(arv, nomeArquivo)) {
                     printf("Erro na abertura do arquivo!");
                     return 1;
                 }
                 break;
             case 2:
-                //pesquisa();
+                srand(time(NULL));
+                for(int i=0;i<30;i++){
+                    buscaArquivoIndice(nomeArquivo, rand() % 10000, &reg);
+                }
+                printf("\n");
+                for(int i=0;i<30;i++){
+                    buscaArquivoDireto(nomeArquivo, rand() % 10000, &reg);
+                }
                 break;
             case 3:
                 //removerRegistro();

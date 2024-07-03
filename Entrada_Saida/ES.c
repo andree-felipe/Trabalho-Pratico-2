@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include "ES.h"
-#include "../Arvore_B/arvore_B.h"
 
 struct registro {
     int mat;
-    unsigned long long cpf;
-    char *nome, *dataNasc;
+    long int cpf;
+    char *dataNasc;
+    char *nome;
 };
 
 char *criaNome(unsigned long long seed) {
@@ -52,8 +52,8 @@ char *criaDataNascimento(unsigned long long seed) {
     return data;
 }
 
-unsigned long long criaCPF(unsigned long long seed) {
-    unsigned long long cpf = 0;
+long int criaCPF(unsigned long long seed) {
+    long int cpf = 0;
     srand(seed);
 
     for(int i=0;i<11;i++) {
@@ -83,36 +83,11 @@ int criaEntrada(char *nomeArquivo, unsigned long long nroRegistos) {
 
     for(unsigned long long i=0;i<nroRegistos-1;i++) {
         reg = criaRegistro(i+1);
-        fprintf(file, "%04d %s %s %011llu\n", reg.mat, reg.nome, reg.dataNasc, reg.cpf);
+        fprintf(file, "%04d %s %s %011ld\n", reg.mat, reg.nome, reg.dataNasc, reg.cpf);
     }
     reg = criaRegistro(nroRegistos);
-    fprintf(file, "%04d %s %s %llu", reg.mat, reg.nome, reg.dataNasc, reg.cpf);
+    fprintf(file, "%04d %s %s %011ld", reg.mat, reg.nome, reg.dataNasc, reg.cpf);
 
     fclose(file);
     return 1;
-}
-
-int processaEntrada(char *nomeArquivo) {
-    registro reg;
-    FILE *file;
-    file = fopen(nomeArquivo, "r");
-    if(!file)
-        return 0;
-
-    while(!feof(file)) {
-        fscanf(file, "%04d %s %s %llu", &reg.mat, reg.nome, reg.dataNasc, &reg.cpf);
-        /*
-        if(!insereNo()) {
-            printf("ERRO!!");
-            return -1;
-        }
-        */
-    }
-
-    fclose(file);
-    return 1;
-}
-
-void printRegistro(registro reg) {
-    printf("%04d %s %s %llu\n", reg.mat, reg.nome, reg.dataNasc, reg.cpf);
 }

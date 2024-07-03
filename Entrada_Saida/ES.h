@@ -20,7 +20,7 @@ char *criaDataNascimento(unsigned long long seed);
 // Funcão para criação dos CPFs para o registro do arquivo
 // Entrada: Seed de criação aleatória
 // Saída: Novo CPF com a seed dada
-unsigned long long criaCPF(unsigned long long seed);
+long int criaCPF(unsigned long long seed);
 
 // Função para a criação do registro
 // Entrada: Seed de criação aleatória
@@ -32,9 +32,3 @@ registro criaRegistro(unsigned long long seed);
 // Saída:   0 - Erro ao criar arquivo
 //          1 - Sucesso na criação
 int criaEntrada(char *nomeArquivo, unsigned long long nroRegistos);
-
-// Função para o preocessamento do arquivo de entrada
-// Entrada: Nome do aqruivo
-// Sáida:  -1 - Erro na abertura do arquivo
-//          0 - Erro na inserção dos dados
-int processaEntrada(char* nomeArquivo);
