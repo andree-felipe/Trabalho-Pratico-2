@@ -28,8 +28,24 @@ Este trabalho visa simular um banco de dados na memória RAM do computar com um 
 | 100 | Média | 0.0294 |
 |  | Máxima | 0.5190 |
 |  | Mínimo | 0.003 |
-| 1000 | Média | 0.0350 |
+| 1000 | Média | 0.035 |
 |  | Máxima | 2.897 |
 |  | Mínimo | 0.002 |
 | 10000 | Média | 0.0249 |
 |  | Máxima | 3.5160 |
+
+## Resultado para as buscas diretas:
+| Chaves | Métodos | Tempo (ms) |
+| ------ | ------- | ---------- |
+|  | Mínimo | 0.096 |
+| 30 | Média | 1.1622 |
+|  | Máxima | 2.394 |
+|  | Mínimo | 0.093 |
+| 100 | Média | 1.631 |
+|  | Máxima | 21.237 |
+|  | Mínimo | 0.005 |
+| 1000 | Média | 1.2759 |
+|  | Máxima | 6.956 |
+|  | Mínimo | 0.002 |
+| 10000 | Média | 1.268 |
+|  | Máxima | 14.046 |
