@@ -4,6 +4,8 @@
 #include "Arvore_B/arvore_B.h"
 #include <time.h>
 
+/*** -- Estruturas -- ***/
+
 typedef struct registro{
     int mat;
     long int cpf;
@@ -15,6 +17,13 @@ typedef struct metricas{
     double tMin, tMax;
 }metricas;
 
+/*** -- Funções -- ***/
+
+/*
+Descrição: Função que busca no arquivo o dado com base no índice informado. No caso a função usa o fseek(), com o tamanho da linha já estabelecido como 34 bytes.
+Entrada: Inteiro do índice, ponteiro para o arquivo.
+Saída: Nada.
+*/
 void buscaArquivoIndice(int indice, FILE *arq) {
     signed long tamanhoLinha = sizeof(char[34]);
     registro reg;
@@ -23,6 +32,11 @@ void buscaArquivoIndice(int indice, FILE *arq) {
     printf("\nNome: %s | Matricula: %d | Data de Nascimento: %s | CPF: %ld\n", reg.nome, reg.mat, reg.data, reg.cpf);
 }
 
+/*
+Descrição: Função que varre o arquivo em busca de um dado igual ao informado.
+Entrada: Inteiro da matrícula (dado a ser procurado), ponteiro para o arquivo.
+Saída: Nada.
+*/
 void buscaArquivoDireto(int mat, FILE *arq) {
     registro reg;
     rewind(arq);
