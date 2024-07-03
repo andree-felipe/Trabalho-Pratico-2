@@ -1,6 +1,8 @@
 #ifndef INC_13_TRABALHO2_ARVORE_B_H
 #define INC_13_TRABALHO2_ARVORE_B_H
 
+#include <stdio.h>
+
 /*** -- Estruturas -- ***/
 
 typedef struct pagina pagina;
@@ -94,4 +96,17 @@ Saída: Nada.
 */
 void imprimeArvore(pagina *raiz, int nivel);
 
+/*
+Descrição: Função que busca em qual página está a matrícula informada, se ela encontrar salva a posição da chave.
+Entrada: Ponteiro para a raiz, inteiro da matrícula.
+Saída: -1 - Elemento não encontrada, caso contrário é o índice do elemento no arquivo.
+*/
+int buscaChave(pagina *raiz, int mat);
+
+/*
+Descrição: Função que irá ler o arquivo de entrada e com base neles, gerar a árvore b.
+Entrada: Ponteiro para a árvore b, ponteiro para o arquivo.
+Saída: 1 - Sucesso, 0 - Erro.
+*/
+int processaEntrada(arvore *arv, FILE *arq);
 #endif //INC_13_TRABALHO2_ARVORE_B_H
