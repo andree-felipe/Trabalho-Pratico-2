@@ -59,7 +59,7 @@ int main(void) {
     arvore *arv;
     metricas btree, direto;
     clock_t inicio, fim;
-    int resp, indice, mat, qtdPesquisa=10000;
+    int resp, indice, mat, qtdPesquisa=10000, ver;
     double tempo;
     char nomeArquivoResultados[20], nomeArquivo[20] = "entrada.txt";
 
@@ -167,6 +167,22 @@ int main(void) {
                 }
                 break;
             case 3:
+                printf("\nDigite o elemento que você deseja remover: ");
+                scanf("%d", &mat);
+                printf("\nNúmero de elementos na árvore: %d\n", getNumElementos(arv));
+                imprimeArvore(getRaiz(arv), 0);
+                printf("\n");
+                ver = deleta(arv, mat);
+                if(ver == 0){
+                    printf("\nElemento não encontrado.\n");
+                }else if(ver == -1){
+                    printf("\nÁrvore vazia.\n");
+                }else{
+                    printf("\nNúmero de elementos na árvore: %d\n", getNumElementos(arv));
+                    imprimeArvore(getRaiz((arv)), 0);
+                    printf("\n");
+                }
+                break;
                 break;
             default:
                 break;
