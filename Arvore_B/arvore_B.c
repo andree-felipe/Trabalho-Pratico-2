@@ -49,10 +49,6 @@ pagina *getRaiz(arvore *arv){
     return arv->raiz;
 }
 
-int getIndice(pagina *page, int pos){
-    return page->chaves[pos]->indice;
-}
-
 /*
 Descrição: Retorna a quantidade de elementos da árvore.
 Entrada: Ponteiro para a árvore b.
