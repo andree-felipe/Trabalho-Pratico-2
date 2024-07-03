@@ -66,7 +66,7 @@ int main(void) {
         scanf("%d", &resp);
         switch (resp){
             case 1:
-                if(!processaEntrada(arv, nomeArquivo)) {
+                if(!processaEntrada(arv, arq)) {
                     printf("Erro na abertura do arquivo!");
                     return 1;
                 }
