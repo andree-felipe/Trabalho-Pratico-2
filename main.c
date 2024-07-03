@@ -17,40 +17,26 @@ typedef struct metricas {
     float media;
 }metricas;
 
-int buscaArquivoIndice(char *nomeArquivo, int indice, registro *dadosColetados) {
+void buscaArquivoIndice(int indice, FILE *arq){
+    registro dadosColetados;
     signed long tamanhoLinha = sizeof(char[35]);
-    long int posicaoByte;
 
-    FILE *arq = fopen(nomeArquivo, "r");
-
-    // Não foi possível abrir o arquivo
-    if(!arq) {
-        return 0;
-    }
-    else {
-        fseek(arq, tamanhoLinha * indice, SEEK_SET);
-        fscanf(arq, "%d %s %s %ld", &dadosColetados->matricula, dadosColetados->nome, dadosColetados->dataNasc, &dadosColetados->cpf);
-        printf("Nome: %s | Matricula: %04d | Data de Nascimento: %s | CPF: %011ld\n", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
-    }
-
-    fclose(arq);
+    fseek(arq, tamanhoLinha * indice, SEEK_SET);
+    fscanf(arq, "%d %s %s %ld", &dadosColetados.matricula, dadosColetados.nome, dadosColetados.dataNasc, &dadosColetados.cpf);
+    printf("Nome: %s | Matricula: %04d | Data de Nascimento: %s | CPF: %011ld\n", dadosColetados.nome, dadosColetados.matricula, dadosColetados.dataNasc, dadosColetados.cpf);
 }
 
-int buscaArquivoDireto(char *nomeArquivo, int matriculaParametro, registro *dadosColetados) {
-    FILE *arq = fopen(nomeArquivo, "r");
-    
-    if(!arq) {
-        return 0;
-    }
-    else {
-        while(fscanf(arq, "%d %s %s %ld", &dadosColetados->matricula, dadosColetados->nome, dadosColetados->dataNasc, &dadosColetados->cpf) != EOF) {
-            if(dadosColetados->matricula == matriculaParametro) {
-                printf("Nome: %s | Matricula: %04d | Data de Nascimento: %s | CPF: %011ld\n", dadosColetados->nome, dadosColetados->matricula, dadosColetados->dataNasc, dadosColetados->cpf);
-            }
+void buscaArquivoDireto(int mat, FILE *arq){
+    registro dadosColetados;
+
+    rewind(arq);
+    dadosColetados.matricula = -1;
+    while(!feof(arq) && dadosColetados.matricula != mat) {
+        fscanf(arq, "%d %s %s %ld", &dadosColetados.matricula, dadosColetados.nome, dadosColetados.dataNasc, &dadosColetados.cpf);
+        if(dadosColetados.matricula == mat) {
+            printf("Nome: %s | Matricula: %04d | Data de Nascimento: %s | CPF: %011ld\n", dadosColetados.nome, dadosColetados.matricula, dadosColetados.dataNasc, dadosColetados.cpf);
         }
     }
-
-    fclose(arq);
 }
 
 int main(void) {
@@ -60,7 +46,7 @@ int main(void) {
     registro reg;
     metricas btree, direto;
     clock_t inicio, fim;
-    int resp, indice, mat, qtdPesquisa=10000;
+    int resp, indice, mat, qtdPesquisa=30;
     double tempo;
     char nomeArquivoResultados[20], nomeArquivo[20] = "entrada.txt";
 
@@ -72,6 +58,8 @@ int main(void) {
         printf("Erro na criação do arquivo de índice!");
         return 1;
     }
+
+    arq = fopen(nomeArquivo, "r");
 
     do{
         printf("\nMenu\n1. Criar índice\n2. Procurar elementos\n3. Remover registro\n4. Sair\n\nEscolha uma opção: ");
@@ -91,7 +79,7 @@ int main(void) {
                     mat = rand() % 11000;
                     inicio = clock();
                     indice = buscaChave(getRaiz(arv), mat);
-                    buscaArquivoIndice(nomeArquivo, indice, &reg);
+                    buscaArquivoIndice(indice, arq);
                     fim = clock();
                     tempo = (double)(fim-inicio)/(CLOCKS_PER_SEC/1000);
                     btree.media += tempo;
@@ -103,7 +91,7 @@ int main(void) {
                         btree.tMax = tempo;
                     
                     inicio = clock();
-                    buscaArquivoDireto(nomeArquivo, mat, &reg);
+                    buscaArquivoDireto(mat, arq);
                     fim = clock();
                     tempo = (double)(fim-inicio)/(CLOCKS_PER_SEC/1000);
                     direto.media += tempo;
@@ -117,14 +105,7 @@ int main(void) {
                 }
                 btree.media /= (float)qtdPesquisa;
                 direto.media /= (float)qtdPesquisa;
-/*
-                printf("\n\nTempo mínimo B-Tree: %f", btree.tMin);
-                printf("\n\nTempo médio B-Tree: %f", btree.media);
-                printf("\n\nTempo máximo B-Tree: %f", btree.tMax);
-                printf("\n\nTempo mínimo direto: %f", direto.tMin);
-                printf("\n\nTempo médio direto: %f", direto.media);
-                printf("\n\nTempo máximo direto: %f\n", direto.tMax);
-*/
+
                 printf("Nome do arquivo: ");
                 scanf(" %[^\n]", nomeArquivoResultados);
                 geraArquivoResultados(nomeArquivoResultados, btree, direto);
@@ -136,5 +117,6 @@ int main(void) {
         }
     }while(resp != 4);
 
+    fclose(arq);
     return 0;
 }
