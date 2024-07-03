@@ -24,8 +24,6 @@ Saída: Ponteiro para a raiz da árvore.
 */
 pagina *getRaiz(arvore *arv);
 
-int getIndice(pagina *page, int pos);
-
 /*
 Descrição: Retorna a quantidade de elementos da árvore.
 Entrada: Ponteiro para a árvore b.
