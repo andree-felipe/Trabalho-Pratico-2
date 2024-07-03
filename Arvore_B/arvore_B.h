@@ -106,3 +106,66 @@ Entrada: Ponteiro para a árvore b, ponteiro do arquivo.
 Saída: 1 - Sucesso, 0 - Erro.
 */
 int processaEntrada(arvore *arv, FILE *arq);
+
+/*
+Descrição: Função que libera a memória alocada para uma página.
+Entrada: Página que irá ser liberada.
+Saída: Nada.
+*/
+void deletaPagina(pagina *page);
+
+/*
+Descrição: Função que procura o predecessor da página, e copía ele para a posição informada.
+Entrada: Ponteiro para a página que irá receber o predecessor, inteiro da posição onde o predecessor será copiado.
+Saída: Nada.
+*/
+void copiaPredecessor(pagina *page, int pos);
+
+/*
+Descrição: Função que remove o elemento indicado na página informada.
+Entrada: Ponteiro para a página folha onde o elemento será removido, inteiro da posição onde está o elemento.
+Saída: Nada.
+*/
+void removeChave(pagina *page, int pos);
+
+/*
+Descrição: Função que realiza o processo de rotação para a esquerda na página.
+Entrada: Ponteiro para a página pai, inteiro indicando qual filho receberá o novo elemento.
+Saída: Nada.
+*/
+void emprestaDireita(pagina *page, int pos);
+
+/*
+Descrição: Função que realiza o processo de rotação para a direita na página.
+Entrada: Ponteiro para a página pai, inteiro indicando o filho direito.
+Saída: Nada.
+*/
+void emprestaEsquerda(pagina *page, int pos);
+
+/*
+Descrição: Função que recebe a página pai, e mescla o filho da direita com o esquerdo. (Os elementos vão da direita para a esquerda).
+Entrada: Ponteiro para página pai, inteiro indicando o filho direito.
+Saída: Nada.
+*/
+void merge(pagina *page, int pos);
+
+/*
+Descrição: Função responsável por determinar qual dos métodos chamar para corrigir os filhos.
+Entrada: Ponteiro para a árvore (para ter acesso à ordem), ponteiro para a página pai, inteiro indicando a página filha que está com elementos abaixo do mínimo.
+Saída: Nada.
+*/
+void corrigiFilho(arvore *arv, pagina *page, int pos);
+
+/*
+Descrição: Função recursiva, responsável por procurar em qual filho está a chave ou em qual posição está chave.
+Entrada: Ponteiro para a árvore, ponteiro para a página, inteiro que será removido.
+Saída: 1 - Elemento encontrado e removido, 0 - Elemento não encontrado.
+*/
+int deletaDaPagina(arvore *arv, pagina *page, int mat);
+
+/*
+Descrição: Função responsável por verificar se a árvore está vazia, e por tratar os retornos da função deletaDaPagina.
+Entrada: Ponteiro para a árvore, inteiro que será removido.
+Saída: 1 - Sucesso, 0 - Elemento não encontrado, -1 - Árvore vazia.
+*/
+int deleta(arvore *arv, int mat);
