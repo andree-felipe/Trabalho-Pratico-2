@@ -348,6 +348,7 @@ int processaEntrada(arvore *arv, FILE *arq){
     int indice = 0, mat;
     long int cpf;
     char nome[6], data[11];
+    rewind(arq);
     while(!feof(arq)){
         fscanf(arq, "%d %s %s %ld", &mat, nome, data, &cpf);
         if(!insere(arv, mat, indice++)){
