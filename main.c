@@ -15,6 +15,7 @@ typedef struct registro{
 
 typedef struct metricas{
     double tMin, tMax;
+    float media;
 }metricas;
 
 /*** -- Funções -- ***/
