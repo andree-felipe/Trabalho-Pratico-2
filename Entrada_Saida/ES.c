@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <string.h>
 #include "ES.h"
 
 struct registro {
@@ -8,6 +8,11 @@ struct registro {
     long int cpf;
     char *dataNasc;
     char *nome;
+};
+
+struct metricas {
+    double tMin, tMax;
+    float media;
 };
 
 char *criaNome(unsigned long long seed) {
@@ -83,11 +88,62 @@ int criaEntrada(char *nomeArquivo, unsigned long long nroRegistos) {
 
     for(unsigned long long i=0;i<nroRegistos-1;i++) {
         reg = criaRegistro(i+1);
-        fprintf(file, "%04d %s %s %011ld\n", reg.mat, reg.nome, reg.dataNasc, reg.cpf);
+        fprintf(file, "%05d %s %s %011ld\n", reg.mat, reg.nome, reg.dataNasc, reg.cpf);
     }
     reg = criaRegistro(nroRegistos);
-    fprintf(file, "%04d %s %s %011ld", reg.mat, reg.nome, reg.dataNasc, reg.cpf);
+    fprintf(file, "%05d %s %s %011ld", reg.mat, reg.nome, reg.dataNasc, reg.cpf);
 
     fclose(file);
     return 1;
+}
+
+void geraArquivoResultados(char *nomeArquivo, metricas btree, metricas direto){
+    FILE *file;
+    char tipo[12]="Por índice", analise[8]="Mínimo", path[29] = "Resultados/";
+    strcat(path, nomeArquivo);
+
+    file = fopen(path, "w");
+    if(!file){
+        printf("Impossiível criar o arquivo\n");
+        return;
+    }
+
+    fprintf(file, "Tipo de busca, Análise(tempo), Tempo(ms)\n");
+    for(int i=0;i<2;i++){
+        for(int j=0;j<3;j++){
+            if(i == 0){
+                switch(j){
+                    case 0:
+                        fprintf(file, "%s, %s, %lf\n", tipo, analise, btree.tMin);
+                        strcpy(analise, "Média");
+                        break;
+                    case 1:
+                        fprintf(file, "%s, %s, %f\n", tipo, analise, btree.media);
+                        strcpy(analise, "Máximo");
+                        break;
+                    case 2:
+                        fprintf(file, "%s, %s, %lf\n", tipo, analise, btree.tMax);
+                        break;
+                }
+            }
+            else{
+                switch(j){
+                    case 0:
+                        strcpy(analise, "Mínimo");
+                        fprintf(file, "%s, %s, %lf\n", tipo, analise, direto.tMin);
+                        strcpy(analise, "Média");
+                        break;
+                    case 1:
+                        fprintf(file, "%s, %s, %f\n", tipo, analise, direto.media);
+                        strcpy(analise, "Máximo");
+                        break;
+                    case 2:
+                        fprintf(file, "%s, %s, %lf", tipo, analise, direto.tMax);
+                        break;
+                }
+            }
+        }
+        strcpy(tipo, "Direto");
+    }
+    fclose(file);
 }

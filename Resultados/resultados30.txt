@@ -1,0 +1,7 @@
+Tipo de busca, Análise(tempo), Tempo(ms)
+Por índice, Mínimo, 0.024000
+Por índice, Média, 0.061833
+Por índice, Máximo, 0.190000
+Direto, Mínimo, 1.688000
+Direto, Média, 2.614900
+Direto, Máximo, 5.211000

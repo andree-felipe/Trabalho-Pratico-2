@@ -1,5 +1,7 @@
 typedef struct registro registro;
 
+typedef struct metricas metricas;
+
 // Função para criação dos nomes para o registro do arquivo
 // Entrada: Seed de criação aleatória
 // Saída:   - Nome criado
@@ -32,3 +34,5 @@ registro criaRegistro(unsigned long long seed);
 // Saída:   0 - Erro ao criar arquivo
 //          1 - Sucesso na criação
 int criaEntrada(char *nomeArquivo, unsigned long long nroRegistos);
+
+void geraArquivoResultados(char *nomeArquivo, metricas btree, metricas direto);

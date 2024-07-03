@@ -12,8 +12,13 @@ typedef struct registro {
     char nome[6];
 }registro;
 
+typedef struct metricas {
+    double tMin, tMax;
+    float media;
+}metricas;
+
 int buscaArquivoIndice(char *nomeArquivo, int indice, registro *dadosColetados) {
-    signed long tamanhoLinha = sizeof(char[34]);
+    signed long tamanhoLinha = sizeof(char[35]);
     long int posicaoByte;
 
     FILE *arq = fopen(nomeArquivo, "r");
@@ -53,10 +58,11 @@ int main(void) {
     arvore *arv;
     pagina *page;
     registro reg;
-    int resp, indice;
-    char nomeArquivo[20] = "entrada.txt";
-
-    buscaArquivoDireto(nomeArquivo, 6, &reg);
+    metricas btree, direto;
+    clock_t inicio, fim;
+    int resp, indice, mat, qtdPesquisa=10000;
+    double tempo;
+    char nomeArquivoResultados[20], nomeArquivo[20] = "entrada.txt";
 
     //printf("\nQual será a ordem da árvore?\nResposta: ");
     //scanf("%d", &resp);
@@ -78,17 +84,52 @@ int main(void) {
                 }
                 break;
             case 2:
+                btree.tMin = btree.tMax = btree.media = 0;
+                direto.tMin = direto.tMax = direto.media = 0;
                 srand(time(NULL));
-                for(int i=0;i<30;i++){
-                    buscaArquivoIndice(nomeArquivo, rand() % 10000, &reg);
+                for(int i = 0; i < qtdPesquisa; i++){
+                    mat = rand() % 11000;
+                    inicio = clock();
+                    indice = buscaChave(getRaiz(arv), mat);
+                    buscaArquivoIndice(nomeArquivo, indice, &reg);
+                    fim = clock();
+                    tempo = (double)(fim-inicio)/(CLOCKS_PER_SEC/1000);
+                    btree.media += tempo;
+                    if(btree.tMin == 0 && btree.tMax == 0)
+                        btree.tMin = btree.tMax = tempo;
+                    else if(tempo < btree.tMin)
+                        btree.tMin = tempo;
+                    else if(tempo > btree.tMax)
+                        btree.tMax = tempo;
+                    
+                    inicio = clock();
+                    buscaArquivoDireto(nomeArquivo, mat, &reg);
+                    fim = clock();
+                    tempo = (double)(fim-inicio)/(CLOCKS_PER_SEC/1000);
+                    direto.media += tempo;
+                    if(direto.tMin == 0 && direto.tMax == 0)
+                        direto.tMin = direto.tMax = tempo;
+                    else if(tempo < direto.tMin)
+                        direto.tMin = tempo;
+                    else if(tempo > direto.tMax)
+                        direto.tMax = tempo;
+                    
                 }
-                printf("\n");
-                for(int i=0;i<30;i++){
-                    buscaArquivoDireto(nomeArquivo, rand() % 10000, &reg);
-                }
+                btree.media /= (float)qtdPesquisa;
+                direto.media /= (float)qtdPesquisa;
+/*
+                printf("\n\nTempo mínimo B-Tree: %f", btree.tMin);
+                printf("\n\nTempo médio B-Tree: %f", btree.media);
+                printf("\n\nTempo máximo B-Tree: %f", btree.tMax);
+                printf("\n\nTempo mínimo direto: %f", direto.tMin);
+                printf("\n\nTempo médio direto: %f", direto.media);
+                printf("\n\nTempo máximo direto: %f\n", direto.tMax);
+*/
+                printf("Nome do arquivo: ");
+                scanf(" %[^\n]", nomeArquivoResultados);
+                geraArquivoResultados(nomeArquivoResultados, btree, direto);
                 break;
             case 3:
-                //removerRegistro();
                 break;
             default:
                 break;
