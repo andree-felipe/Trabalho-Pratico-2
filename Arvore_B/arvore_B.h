@@ -28,45 +28,72 @@ Saída: Ponteiro para a raiz da árvore.
 pagina *getRaiz(arvore *arv);
 
 /*
-Descrição: Cria uma estrutura da página.
+Descrição: Retorna a quantidade de elementos da árvore.
 Entrada: Ponteiro para a árvore b.
+Saída: Inteiro da quantidade de elementos da árvore.
+*/
+int getNumElementos(arvore *arv);
+
+/*
+Descrição: Retorna a ordem da árvore.
+Entrada: Ponteiro para a árvore b.
+Saída: Inteiro da ordem.
+*/
+int getOrdem(arvore *arv);
+
+/*
+Descrição: Cria uma estrutura de página para a raiz.
+Entrada: Ponteiro para a árvore b, estrutura com os valores iniciais, ponteiro para uma página filha.
 Saída: Ponteiro para a página; NULL em caso de erro.
 */
-pagina *criaPagina(arvore *arv);
+pagina *criaRaiz(arvore *arv, chave *registro, pagina *filho);
 
 /*
-Descrição: Insere um elemento na árvore, e chama as funções de correção dependendo do caso.
-Entrada: Ponteiro para a árvore b, inteiro da chave, inteiro da linha.
-Saída: 1 - Sucesso, 0 - Erro.
+Descrição: Função responsável por criar uma nova página para o split (por enquanto só aceita ordem par).
+Entrada: Quantidade de chaves (arv->ordem - 1).
+Saída: Ponteiro para a nova página;
 */
-int insereNo(arvore *arv, int valor, int indice);
+pagina *criaPagina(int quantidade);
 
 /*
-Descrição: Aloca uma nova estrutura de chave, e salva ela na lista de chaves da página.
-Entrada: Ponteiro para a página onde será inserido, inteiro da chave, inteiro da linha.
-Saída: 1 - Sucesso, 0 - Erro.
+Descrição: Função de inserção de um elemento na árvore. Aloca um bloco para guardar o registro e passa o ponteiro dele para a insereChave,
+    também cria um ponteiro de ponteiro que sempre irá apontar para o novo bloco de registro que será incluído, dessa forma durante a split ele
+    começa a apontar para o bloco que subiu.
+Entrada: Ponteiro para a raiz da árvore, inteiro da matrícula (chave principal), inteiro do índice (linha no arquivo).
+Saída: 1 - Sucesso, 0 - Casos de erro.
 */
-int insereFolha(pagina *page, int valor, int indice);
+int insere(arvore *arv, int matricula, int indice);
 
-/* 
-Descrição: Busca de um chave na árvore para coleta do índice para busca posterior no arquivo
-Entrada: Ponteiro para a árvore, valor inteiro de busca
-Saída: -1 - não há chave com o valor buscado, índice da chave buscada
+/*
+Descrição: Função que insere um registro em uma página.
+Entrada: Ponteiro para a página, ponteiro para o filho do registro, ponteiro para o registro, inteiro da posição onde o registro entra.
+Saída: Nada.
 */
-int buscaArvore(arvore *arv, int valorBusca);
+void inserePagina(pagina *page, pagina *filho, chave *registro, int pos);
 
-/* 
-Entrada: Nome do arquivo, índice de busca
-Descrição: Busca no arquivo a partir do índice encontrado na árvore
-Saída: 1 - Sucesso, 0 - Falha
+/*
+Descrição: Função que procura em qual filho vai o registro, se for folha significa que achou a posição dele na chave. E faz isso recursivamente,
+    decidindo se vai inserir, dar split, ou não fazer nada.
+Entrada: Ponteiro para a árvore b, ponteiro de ponteiro para o registro que será inserido (será alterado na split), ponteiro para o registro, ponteiro
+    para a página atual, ponteiro de ponteiro para o filho (usada para guardar a nova página da split na estrutura criada na insere).
+Saída: 1 - ou insere, ou da split, ou cria uma nova raiz (são tratados nas funções), 0 - Encerra a execução.
 */
-int buscaArquivoIndice(char nomeArquivo, int indice, registro *dadosColetados);
+int insereChave(arvore *arv, chave **inserida, chave *registro, pagina *page, pagina **filho);
 
-/* 
-Entrada: 
-Descrição: busca de informações diretamente no arquivo
-Saída: 0 - Falha
+/*
+Descrição: Função para corrigir o balanceamento da árvore, realizando a subdivisão da página cheia em duas novas páginas.
+Entrada: Ponteiro de ponteiro para o registro que será inserido, ponteiro para o registro, ponteiro para a página cheia, ponteiro para o filho,
+    ponteiro de ponteiros para a nova página (novo filho), inteiro da posição.
+Saída: 1 - Sucesso, 0 - Casos de erro
 */
-int buscaArquivoDireto(char nomeArquivo, int matriculaParametro, registro *dadosColetados);
+int split(chave **inserida, chave *registro, pagina *page, pagina *filho, pagina **newPage, int pos);
+
+/*
+Descrição: Função que imprime a árvore da seguinte maneira: nível - número de chaves - chaves - pai (se tiver). A função é chamada recursivamente
+    imprimindo as sub-árvores da esquerda para a direita.
+Entrada: Ponteiro para a página (raiz inicialmente), inteiro do nível (0 inicialmente).
+Saída: Nada.
+*/
+void imprimeArvore(pagina *raiz, int nivel);
 
 #endif //INC_13_TRABALHO2_ARVORE_B_H
