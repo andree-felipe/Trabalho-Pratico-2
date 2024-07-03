@@ -169,7 +169,7 @@ Saída: 1 - Sucesso, 0 - Casos de erro.
 int insere(arvore *arv, int matricula, int indice) {
     int cond; //Verifica se a árvore está cheia, e necessita de uma nova raiz.
     chave *registro = (chave*)malloc(sizeof(chave)); //Aloca um novo bloco para o registro.
-    chave **inserida = NULL; //Essa função aponta para o registro que será inserido.
+    chave **inserida = &registro; //Essa função aponta para o registro que será inserido.
     pagina *filho; //Representa o filho da página atual, é setado na insereChave.
     if(!registro){
         return 0;
@@ -185,6 +185,7 @@ int insere(arvore *arv, int matricula, int indice) {
         if(!arv->raiz)
             return 0;
     }
+    arv->numElementos++;
     return 1;
 }
 
